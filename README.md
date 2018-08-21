@@ -1,6 +1,12 @@
-# Ubuntu Vagrant Shell
-## Simple foundation for App development
+# Angular Street Quiz with Ubuntu 16.04LTS Virtual Machine
 
+## Getting Started
+
+The first step is setting up the Virtual Machine, which this document covers. Once you have done that click the link below to view the setup documentation for the Angular app itself.
+
+* [Angular App Documentation](angular-street-quiz/README.md)
+
+## Virtual Machine setup and configuration
 ### Requirements:
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * [Vagrant](https://www.vagrantup.com/downloads.html)
