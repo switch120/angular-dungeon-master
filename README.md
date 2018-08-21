@@ -4,7 +4,7 @@
 
 The first step is setting up the Virtual Machine, which this document covers. Once you have done that click the link below to view the setup documentation for the Angular app itself.
 
-* [Angular App Documentation](angular-street-quiz/README.md)
+* [Angular App Documentation](angular-street-quiz)
 
 ## Virtual Machine setup and configuration
 ### Requirements:
