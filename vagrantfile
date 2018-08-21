@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+## Optional plugins for better file-change notification (for things like React/Angular dev server change detection)
+ required_plugins = %w( vagrant-fsnotify vagrant-notify-forwarder )
+ required_plugins.each do |plugin|
+   system "vagrant plugin install #{plugin}" unless Vagrant.has_plugin? plugin
+ end
+
+Vagrant.configure("2") do |config|
+
+    config.vm.box = "bento/ubuntu-16.04"
+    config.vm.network "private_network", ip: "192.168.20.10"
+    config.vm.hostname = "my-vm-host"
+    
+    ## if you need to forward any ports (mySql, Mongo, etc)
+    # config.vm.network "forwarded_port", guest: 4200, host: 4200
+
+    ## Standard file mount (not as reliable as NFS)
+    # config.vm.synced_folder "./code", "/var/code", :mount_options => ["dmode=777", "fmode=666"]
+
+    ## NFS file mount. Make sure to comment out standard mount if using NFS
+    ## Will prompt for an Administrative passwword
+    config.vm.synced_folder "./angular-street-quiz", "/var/www", :nfs => { :mount_options => ["dmode=777","fmode=666"] }
+
+    ## Configure the provisioner script
+    config.vm.provision :shell, :path => "provisioner.sh"
+    
+end
