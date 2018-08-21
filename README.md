@@ -28,7 +28,7 @@ After the VM is finished booting and is provisioned, you can access the VM termi
 
 ### File Mapping
 
-The local `/code` folder in this project is automatically mapped to `/var/code` in the VM by default.
+The local `/angular-street-quiz` folder in this project is automatically mapped to `/var/www` in the VM by default.
 
 ### Getting out of the VM
 To exit the VM console, like any other SSH session, use the `exit` command.
