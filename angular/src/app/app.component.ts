@@ -143,39 +143,10 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
         
         // projectiles collide with pathlayer
-        this.player.projectilesOverlapWith([this.map.pathLayer, this.platforms], (projectile, platform) => { 
-            // projectile.destroy();
+        this.player.projectilesOverlapWith([this.map.pathLayer, ...this.platforms, this.map.staticSpikesGroup, this.map.dynamicsSpikesGroup], (projectile, platform) => { 
+            projectile.destroy();
         });
 
-        // scene.physics.add.collider(this.player.bullets, this.map.pathLayer, (bullet, ground) => { 
-        //     bullet.destroy();
-        // });
-
-        // scene.physics.add.overlap(this.player.bullets, this.bombs.group, (bullet:Phaser.Physics.Arcade.Sprite, bomb:Phaser.Physics.Arcade.Sprite) => {
-            
-        //     // bullet impact - remove it
-        //     bullet.disableBody(true, true);
-        //     bullet.destroy();
-
-        //     if (bomb.scaleX > .75)
-        //     {
-        //         bomb.setScale(bomb.scaleX / 2);
-        //         bomb.setAccelerationX(bomb.body.velocity.x * 1.5);
-
-        //         let newBomb = this.bombs.addBomb(bomb.y);
-        //         newBomb.x = bomb.x;
-        //         newBomb.setAccelerationX(-1 * bomb.body.velocity.x);
-        //         newBomb.setScale(bomb.scaleX);
-                
-        //         return;
-        //     }
-
-        //     if (bomb.scaleX <= .75)
-        //     {
-        //         bomb.disableBody(true, true);
-        //         bomb.destroy();
-        //     }
-        // });
     }
 
     update(scene: Phaser.Scene) {
