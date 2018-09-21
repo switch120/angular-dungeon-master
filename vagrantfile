@@ -10,8 +10,8 @@
 Vagrant.configure("2") do |config|
 
     config.vm.box = "bento/ubuntu-16.04"
-    config.vm.network "private_network", ip: "192.168.20.10"
-    config.vm.hostname = "my-vm-host"
+    config.vm.network "private_network", ip: "192.168.20.22"
+    config.vm.hostname = "angular-bullet-time"
     
     ## if you need to forward any ports (mySql, Mongo, etc)
     # config.vm.network "forwarded_port", guest: 4200, host: 4200
@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
 
     ## NFS file mount. Make sure to comment out standard mount if using NFS
     ## Will prompt for an Administrative passwword
-    config.vm.synced_folder "./angular-street-quiz", "/var/www", :nfs => { :mount_options => ["dmode=777","fmode=666"] }
+    config.vm.synced_folder "./angular", "/var/www", :nfs => { :mount_options => ["dmode=777","fmode=666"] }
 
     ## Configure the provisioner script
     config.vm.provision :shell, :path => "provisioner.sh"
