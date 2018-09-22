@@ -14,7 +14,7 @@ export class ngStars extends ngCollectible {
         });
 
         this.group.children.iterate(function (child) {
-            child.setVelocity(0,200);
+            child.setAcceleration(0,200);
             child.body.allowGravity = false;
             // child.setDrag(300);
             child.body.damping = 0;
