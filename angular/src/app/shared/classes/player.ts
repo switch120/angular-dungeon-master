@@ -1,245 +1,310 @@
+import { ngMap } from './map';
 import { ngArcadeSprite } from "./gameObjects";
+import { ngMeleeWeapon } from './meleeWeapons';
+import { Projectiles } from './projectiles';
 
-export class Player extends ngArcadeSprite
+export namespace Players
 {
-    private idleTimeout:any;
-    private idleTimeoutMs:number = 500;
-
-    private _cursors:Phaser.Input.Keyboard.CursorKeys;
-    private _projectiles:Phaser.Physics.Arcade.Group;
-
-    private direction:number = 1;
-
-    public get projectiles():Phaser.Physics.Arcade.Group {
-        return this._projectiles;
+    export interface IPlayerCharacter {
+        addAnimations()
+        update()
+        kill()
+        respawn(map:ngMap)
     }
 
-    public get accelleration():number {
-        let accel = this.settings.acceleration.x;
-        return this._cursors.shift.isDown ? this.settings.acceleration.x * this.settings.turboCoefficient : accel;
+    export interface IPlayerState {
+        movementVector:number,
+        meleeWeapons:ngMeleeWeapon[],
+        activeMelee?:ngMeleeWeapon,
+        rangedWeapons:Projectiles.ngProjectileGroup[],
+        activeRanged?:Projectiles.ngProjectileGroup
     }
 
-    public get cursorKeys():Phaser.Input.Keyboard.CursorKeys {
-        return this._cursors;
+    export interface IPlayerSettings {
+        texture?:string,
+        drag:number,
+        bounce:number,
+        turboCoefficient:number,
+        maxVelocityX:number,
+        maxVelocityY:number,                
+        accelerationX:number,
+        accelerationY:number,
+        idleTimeout?:any,
+        idleTimeoutMs?:number
     }
 
-    public settings = {
-        gravity: 800,
-        bounce: 0.3,
-        turboCoefficient: 1.5,
-        velocity: {
-            y: 2400,
-            max: {
-                x: 250,
-                y: 450
-            }
-        },
-        acceleration: {
-            x: 1200,
-            y: 1200
+    export class ngPlayerCharacter extends ngArcadeSprite implements IPlayerCharacter
+    {
+        protected _state:IPlayerState = {
+            movementVector: 270,
+            meleeWeapons: [],
+            rangedWeapons: [],
         }
-    }
 
-    constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
-    {
-        super(scene, x, y, texture);
-        this.create();
-    }
+        protected _settings:IPlayerSettings = {
+            drag: 900,
+            bounce: 0.3,
+            turboCoefficient: 1.5,
+            maxVelocityX: 250,
+            maxVelocityY: 250,
+            accelerationX: 2000,
+            accelerationY: 2000,
+        }
 
-    public create()
-    {
-        super.create();
-
-        this.sprite.setBounce(this.settings.bounce);
-        this.sprite.setCollideWorldBounds(true);
-        this.sprite.setGravityY(this.settings.gravity);
-        this.sprite.setAcceleration(0, 0);
-        this.sprite.setVelocity(0, 0);
-        this.sprite.setMaxVelocity(this.settings.velocity.max.x, this.settings.velocity.max.y);
-
-        this._cursors = this.scene.input.keyboard.createCursorKeys();
-        this._projectiles = this.scene.physics.add.group({ classType: Bullet, runChildUpdate: true });
+        private _cursors:Phaser.Input.Keyboard.CursorKeys;
         
-        this.registerInputHandler();
+        public get meleeWeapon():ngMeleeWeapon {
+            return this._state.activeMelee;
+        }
 
-        // scene.cameras.main.setBounds(0, 0, 4000, 3000);
-        this.scene.cameras.main.startFollow(this.sprite);
-    }
+        public get movementVector():number {
+            return this._state.movementVector;
+        }
 
-    public static loadAssets(scene:Phaser.Scene)
-    {
-        scene.load.image("bullet-1", "assets/bullets/bullet279.png");
-        scene.load.spritesheet('player', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
-    }
+        public get projectiles():Phaser.Physics.Arcade.Group {
+            return this._state.activeRanged.group;
+        }
 
-    addAnimations()
-    {
-        if (this.scene.anims.get("left")) return;
+        public get accelleration():number {
+            // todo: support vertical movement
+            let accel = this._settings.accelerationX;
+            return this._cursors.shift.isDown ? this._settings.accelerationX * this._settings.turboCoefficient : accel;
+        }
 
-        this.scene.anims.create({
-            key: 'left',
-            frames: this.scene.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-            frameRate: 10,
-            repeat: -1
-        });
+        public get cursorKeys():Phaser.Input.Keyboard.CursorKeys {
+            return this._cursors;
+        }
 
-        this.scene.anims.create({
-            key: 'turn',
-            frames: [{ key: 'player', frame: 4 }],
-            frameRate: 20
-        });
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
+        {
+            super(scene, x, y, texture);
+        }
 
-        this.scene.anims.create({
-            key: 'right',
-            frames: this.scene.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
-            frameRate: 10,
-            repeat: -1
-        });
+        public create(x?:number, y?:number)
+        {
+            super.create(x, y);
 
-        this.sprite.anims.play('turn');
-    }
+            this.sprite.setBounce(this._settings.bounce);
+            this.sprite.setCollideWorldBounds(true);
+            this.sprite.body.allowGravity = false;
+            this.sprite.setDrag(this._settings.drag, this._settings.drag);
+            this.sprite.setAcceleration(0, 0);
+            this.sprite.setVelocity(0, 0);
+            this.sprite.setMaxVelocity(this._settings.maxVelocityX, this._settings.maxVelocityY);
+            this.sprite.depth = 1;
 
-    private registerInputHandler()
-    {
-        this.scene.input.keyboard.on('keydown_LEFT', (evt) => {
-            if (!this.isAlive) return;
-            this.sprite.setAccelerationX(-1 * (this.accelleration));
-            this.sprite.anims.play("left", true);
-            this.direction = -1;
-        });
-
-        this.scene.input.keyboard.on('keydown_RIGHT', (evt) => {
-            if (!this.isAlive) return;
-            this.sprite.setAccelerationX(this.accelleration);
-            this.sprite.anims.play("right", true);
-            this.direction = 1;
-        });
-
-        this.scene.input.keyboard.on('keydown_SHIFT', (evt) => {
-            if (!this.isAlive) return;
-            this.sprite.setMaxVelocity(this.settings.velocity.max.x * this.settings.turboCoefficient, this.settings.velocity.max.y);
-        });
-        
-        this.scene.input.keyboard.on('keyup_SHIFT', (evt) => {
-            if (!this.isAlive) return;
-            this.sprite.setMaxVelocity(this.settings.velocity.max.x, this.settings.velocity.max.y);
-        });
-
-        this.scene.input.keyboard.on('keydown_DOWN', (evt) => {
-            if (!this.isAlive || this.sprite.body.touching.down) return;
-            // this.sprite.setAccelerationY(this.settings.acceleration.y);
-            this.sprite.setVelocityY(this.settings.velocity.y);
-        });
-
-        this.scene.input.keyboard.on('keyup_DOWN', (evt) => {
-            if (!this.isAlive || this.sprite.body.touching.down) return;
-            // this.sprite.setAccelerationY(this.settings.acceleration.y);
-            this.sprite.setVelocityY(this.settings.velocity.max.y);
-        });
-
-        // double jump
-        this.scene.input.keyboard.on('keydown_UP', (evt) => {
-            if (!this.isAlive) return;
-            let ct: number = parseInt(this.sprite.getData("upCount")) || 0;
-
-            if (1 || ct++ < 2) this.sprite.setVelocityY(-1 * (this.settings.velocity.y));
-            this.sprite.setData("upCount", ct);
+            this._cursors = this.scene.input.keyboard.createCursorKeys();
             
-            // Todo: jepack fuel!
-            this.sprite.setAccelerationY(-1200);
-        });
+            this._state.rangedWeapons.push(new Projectiles.ThrowingAxe(this.scene, this, { key: 'tiles' }).create());
+            this._state.rangedWeapons.push(new Projectiles.StandardArrow(this.scene, this, { key: 'tiles' }).create());
+            this._state.rangedWeapons.push(new Projectiles.BlueMagicOrb(this.scene, this, { key: 'tiles' }).create());
+            this._state.rangedWeapons.push(new Projectiles.FireBall(this.scene, this, { key: 'tiles' }).create());
 
-        this.scene.input.keyboard.on('keyup_UP', (evt) => {
-            if (!this.isAlive) return;
-            this.sprite.setAccelerationY(0);
-        });
+            this._state.activeRanged = this._state.rangedWeapons[0];
 
-        this.scene.input.keyboard.on('keydown_SPACE', (evt) => {
-            if (!this.isAlive) return;
+            this._state.meleeWeapons.push(new ngMeleeWeapon(this, 'tiles', 5660));
+            this._state.activeMelee = this._state.meleeWeapons[0];
+            
+            this.registerInputHandler();
 
-            // Get projectile from group
-            var projectile = this._projectiles.get().setActive(true).setVisible(true);
+            this.scene.cameras.main.startFollow(this.sprite);
+        }
 
-            if (projectile)
+        private registerInputHandler()
+        {
+            this.scene.input.keyboard.on('keydown_SPACE', (evt) => {
+                if (!this.isAlive) return;
+                this._state.activeRanged.fire();
+            });
+
+            this.scene.input.keyboard.on('keydown_SHIFT', (evt) => {
+                if (!this.isAlive || this._state.activeMelee.visible) return;
+                this._state.activeMelee.slash();
+            });
+
+            this.scene.input.keyboard.on('keyup_SHIFT', (evt) => {
+                // clearInterval(this._weaponTimeout);
+            });
+
+            this.scene.input.keyboard.on('keyup_X', (evt) => {
+                const curIdx = this._state.rangedWeapons.indexOf(this._state.activeRanged);
+                let next = curIdx == this._state.rangedWeapons.length - 1 ? 0 : curIdx + 1;
+                this._state.activeRanged = this._state.rangedWeapons[next];
+            });
+        }
+
+        update()
+        {
+            if (!this.isAlive || !this.sprite.body) return;
+
+            const diagonal = (this._cursors.left.isDown || this._cursors.right.isDown) && (this._cursors.up.isDown || this._cursors.down.isDown);
+            const weaponVisible = this._state.activeMelee.visible;
+            
+            if (this._cursors.right.isDown)
             {
-                projectile.fire(this.sprite, this.direction * 950);
+                this.sprite.setAccelerationX(this.accelleration);
+                if (!diagonal) this.sprite.anims.play(`${this._settings.texture}_right`, true);
+                if (!weaponVisible) this._state.movementVector = 0;
             }
-        });
-    }
+            else if (this._cursors.left.isDown)
+            {
+                this.sprite.setAccelerationX(-1 * this.accelleration);
+                if (!diagonal) this.sprite.anims.play(`${this._settings.texture}_left`, true);
+                if (!weaponVisible) this._state.movementVector = 180;
+            }
+            else
+            {
+                this.sprite.setAccelerationX(0);
+            }
 
-    private queuePlayIdle()
-    {
-        if (this.idleTimeout) return;
+            if (this._cursors.up.isDown)
+            {
+                this.sprite.setAccelerationY(-1 * this.accelleration);
+                if (!weaponVisible)
+                {
+                    this.sprite.anims.play(`${this._settings.texture}_up`, true);
+                    this._state.movementVector = 270;
+                }
+            }
+            else if (this._cursors.down.isDown)
+            {
+                this.sprite.setAccelerationY(this.accelleration);
+                if (!weaponVisible)
+                {
+                    this.sprite.anims.play(`${this._settings.texture}_down`, true);
+                    this._state.movementVector = 90;
+                }
+            }
+            else
+            {
+                this.sprite.setAccelerationY(0);
+            }
 
-        this.idleTimeout = setTimeout(() => {
-            this.sprite.anims.play('turn', true);
-        }, this.idleTimeoutMs);
-    }
+            this._state.activeMelee.update();
 
-    update()
-    {
-        if (!this.isAlive || !this.sprite.body) return;
-        
-        if (this.sprite.body.touching.down) 
+        }
+        kill()
         {
-            this.sprite.setData("upCount", 0);
+            if (!this.isAlive) this.kill();
+
+            this.sprite.setTint(0xff0000);
+            this.sprite.setAcceleration(0,0).setVelocity(0,0);
+            this.sprite.visible = false;
+        }
+        respawn(map:ngMap) {
+            let {x, y}:any = map.getSpawnPoint();
+            this.sprite.clearTint();
+            this.sprite.visible = true;
+            this.sprite.setX(x);
+            this.sprite.setY(y);
+        }
+        public projectilesOverlapWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
+        {
+            this.scene.physics.add.overlap(this._state.rangedWeapons.map(elem => elem.group), object, callback);
         }
 
-        // movement in any direction stops the player from looking at you
-        if (this.isAlive && (this._cursors.left.isDown || this._cursors.up.isDown || this._cursors.right.isDown || this._cursors.down.isDown))
-        {
-            clearTimeout(this.idleTimeout);
-            // why?!
-            this.idleTimeout = 0;
+        addAnimations()
+        {   
+            // needed for interface
+            return;
         }
-        else if (this.sprite.body.touching.down)
+
+        // load ALL player spritesheets here ahead of time
+        public static loadAssets(scene:Phaser.Scene)
         {
-            if (!this.idleTimeout) this.queuePlayIdle();
+            scene.load.spritesheet('ninja', 'assets/sprites/ninja_m.png', { frameWidth: 32, frameHeight: 36 });
+            scene.load.spritesheet('jedi', 'assets/sprites/jedi.png', { frameWidth: 32, frameHeight: 48 });
         }
     }
-    kill()
-    {
-        if (!this.isAlive) this.kill();
 
-        // this.sprite.setMaxVelocity(1600);
-        this.sprite.setTint(0xff0000);
-        // this.sprite.setAccelerationY(-1200).setAccelerationX(0).setVelocityX(25);
-        this.sprite.setAcceleration(0,0).setVelocity(0,0);
-
-        // fall off screen
-        // this.sprite.setCollideWorldBounds(false);
-        // this.sprite.body.checkCollision = <ArcadeBodyCollision>{ none: true };
-
-        // setTimeout(() => {
-        //     this.sprite.setVelocityX(0);
-        //     this.sprite.setAccelerationY(800);
-        //     // this.player.sprite.setAcceleration(0, 50);
-        // }, 500);
+    export class BasePlayerCharacter extends ngPlayerCharacter {
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
+        {
+            super(scene, x, y, texture);
+            this._settings.texture = texture;
+            this.create();
+        }
     }
-    public projectilesOverlapWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
-    {
-        this.scene.physics.add.overlap(this.projectiles, object, callback);
-    }
-}
-export class Bullet extends Phaser.Physics.Arcade.Sprite
-{
-    private _scene:Phaser.Scene;
 
-    constructor(scene, x:number, y:number)
+    export class Jedi extends BasePlayerCharacter
     {
-        super(scene, x, y, '');
-        this._scene = scene;
-        Phaser.GameObjects.Image.call(this, this._scene, 0, 0, '');
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "jedi")
+        {
+            super(scene, x, y, texture);
+        }
+
+        addAnimations()
+        {
+            if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_left`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 4, end: 7 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_right`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 8, end: 11 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_up`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 12, end: 15 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_down`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: 2
+            });
+        }
     }
-    
-    fire(player:Phaser.Physics.Arcade.Sprite, velocity:number = 950, texture:string = "bullet-1")
+    export class Ninja extends BasePlayerCharacter
     {
-        this.setTexture(texture);
-        this.setPosition(player.body.position.x + 20, player.body.position.y + 20);
-        // this.setAcceleration(2000, 0);
-        this.setVelocityY(0);
-        this.setVelocityX(velocity);
-        this.body.allowGravity = false;
-        this.setSize(12, 12);
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "ninja")
+        {
+            super(scene, x, y, texture);
+        }
+
+        addAnimations()
+        {
+            console.log(`${this._settings.texture}_down`);
+            if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_left`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 9, end: 11 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_right`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 3, end: 5 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_up`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 0, end: 2 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_down`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 6, end: 8 }),
+                frameRate: 10,
+                repeat: 2
+            });
+        }
     }
 }

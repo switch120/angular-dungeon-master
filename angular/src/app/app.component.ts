@@ -2,7 +2,7 @@ import { IMapConfig, ngMap } from './shared/classes/map';
 import { BombGroup } from './shared/classes/bombs';
 import { Component, ViewChild, ElementRef, OnInit, AfterViewInit } from '@angular/core';
 import * as Phaser from 'phaser';
-import { Player } from './shared/classes/player';
+import { Players } from './shared/classes/player';
 import { ngStars } from './shared/classes/collectibles';
 
 @Component({
@@ -12,7 +12,7 @@ import { ngStars } from './shared/classes/collectibles';
 })
 export class AppComponent implements OnInit, AfterViewInit {
 
-    private player: Player;
+    private player: Players.ngPlayerCharacter;
 
     private gameData = {
         over: false,
@@ -25,16 +25,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     private mapConfig:IMapConfig = {
         tilemap: {
-            tilesetName: '0x72-industrial-tileset-32px-extruded',
-            jsonPath: 'assets/tilemaps/platformer.json',
+            tilesetName: 'base-tiles',
+            jsonPath: 'assets/tilemaps/dungeon_1.json',
             deceleration: this.gameData.deceleration
         },
-        spritesheetPath: 'assets/tilemaps/platformer.png'
+        spritesheetPath: 'assets/tilemaps/dungeon_1.png'
     }
-
-    private bullet;
-    private bullets;
-    private bulletTime = 0;
 
     private game: Phaser.Game;
 
@@ -55,6 +51,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             physics: {
                 default: 'arcade',
                 arcade: {
+                    debug: false,
                     gravity: { y: 600 }
                 }
             },
@@ -81,7 +78,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.map.loadAssets();
         
         BombGroup.loadAssets(scene);
-        Player.loadAssets(scene);
+        Players.ngPlayerCharacter.loadAssets(scene);
 
         ngStars.loadAssets(scene);
     }
@@ -91,36 +88,74 @@ export class AppComponent implements OnInit, AfterViewInit {
         // load the map 
         this.map.create();
         
-        this.map.pathLayer.setCollisionByProperty({ collides: true });
+        // this.map.pathLayer.setCollisionByProperty({ collides: true });
+        this.map.pathLayer.setCollisionByExclusion([-1]);
         
         this.gameData.score.text = scene.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
         this.platforms = this.map.platformGroups;
 
-        this.stars = new ngStars(scene);
-        this.stars.create(5);
-        this.stars.collideWith([this.map.pathLayer, ...this.platforms]);
+        // this.stars = new ngStars(scene);
+        // this.stars.create(5);
+        // this.stars.collideWith([this.map.pathLayer, ...this.platforms]);
 
         this.bombs = new BombGroup(scene);
-        this.bombs.collideWith([this.map.pathLayer, this.stars, this.bombs.group]);
+        this.bombs.collideWith([this.map.pathLayer, this.bombs.group]);
 
         // Instantiate a player instance at the location of the "Spawn Point" object in the Tiled map
         const spawnPoint:any = this.map.getSpawnPoint();
 
-        this.player = new Player(scene, spawnPoint.x, spawnPoint.y);
+        this.player = new Players.Jedi(scene, spawnPoint.x, spawnPoint.y);
         this.player.addAnimations();
 
         // collide with main path layer, and moving (dynamic) platforms
         this.player.collideWith([this.map.pathLayer, ...this.platforms], (player, platform) => this.map.platformCollide(player, platform));
         
         // collide with spikes and bombs
-        this.player.collideWith([this.map.dynamicsSpikesGroup, this.map.staticSpikesGroup, this.bombs.group], () => {
+        // this.player.collideWith([this.map.dynamicsSpikesGroup, this.map.staticSpikesGroup, this.bombs.group], () => {
+        this.player.collideWith([this.map.dynamicsSpikesGroup, this.map.staticSpikesGroup], () => {
             this.gameData.over = true;
             this.player.kill();
         });
 
+        this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
+
+        this.player.meleeWeapon.overlapWith(this.bombs.group, (weapon:Phaser.Physics.Arcade.Sprite, bomb:Phaser.Physics.Arcade.Sprite) => {
+            if (!weapon.visible) return;
+
+            const nudge = 50;
+            let vX, vY;
+
+            switch(this.player.movementVector)
+            {
+                // right / left - only affects x axis
+                case 0:
+                    vX = bomb.body.velocity.x < 0 ? -1 * bomb.body.velocity.x - nudge : bomb.body.velocity.x + nudge;
+                    vY = bomb.body.velocity.y;
+                    break;
+                    
+                case 180:
+                    vX = bomb.body.velocity.x < 0 ? bomb.body.velocity.x - nudge : -1 * bomb.body.velocity.x + nudge;
+                    vY = bomb.body.velocity.y;
+                    break;
+
+                // down / up - only affects y axis
+                case 90:
+                    vY = bomb.body.velocity.y < 0 ? -1 * bomb.body.velocity.y - nudge : bomb.body.velocity.y + nudge;
+                    vX = bomb.body.velocity.x + nudge;
+                    break;
+
+                case 270:
+                    vY = bomb.body.velocity.y < 0 ? bomb.body.velocity.y - nudge : -1 * bomb.body.velocity.y + nudge;
+                    vX = bomb.body.velocity.x + nudge;
+                    break;
+            }
+            
+            bomb.setVelocity(vX, vY);
+        });
+
         // collect the stars
-        this.player.overlapWith(this.stars.group, (sprite, star) => {
+        /*this.player.overlapWith(this.stars.group, (sprite, star) => {
             star.disableBody(true, true);
             this.gameData.score.value += 10;
             this.gameData.score.text.setText('Score: ' + this.gameData.score.value);
@@ -137,15 +172,15 @@ export class AppComponent implements OnInit, AfterViewInit {
                     this.bombs.addBomb(16, this.player.sprite.x);
                 }
             }
-        });
+        });*/
 
         // projectiles collide w/ bombs
         this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
         
         // projectiles collide with pathlayer
-        this.player.projectilesOverlapWith([this.map.pathLayer, ...this.platforms, this.map.staticSpikesGroup, this.map.dynamicsSpikesGroup], (projectile, platform) => { 
-            projectile.destroy();
-        });
+        // this.player.projectilesOverlapWith([this.map.pathLayer, ...this.platforms, this.map.staticSpikesGroup, this.map.dynamicsSpikesGroup], (projectile, platform) => { 
+        //     projectile.destroy();
+        // });
 
     }
 
@@ -162,9 +197,11 @@ export class AppComponent implements OnInit, AfterViewInit {
             // this.marker.destroy();
 
             cam.once("camerafadeoutcomplete", () => {
-                scene.scene.restart();
-                this.player.sprite.destroy();
+                // scene.scene.restart();
+                // this.player.sprite.destroy();
+                this.player.respawn(this.map);
                 this.gameData.over = false;
+                cam.fadeIn();
             });
         };
 

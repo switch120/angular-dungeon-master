@@ -2,7 +2,9 @@ import { ngGameObject, ngGroup } from "./gameObjects";
 
 export class BombGroup extends ngGroup
 {
-    public texture = "bomb";
+    public texture = "tiles";
+    // public frame = 4098;
+    public frame = 4955;
 
     constructor(scene:Phaser.Scene, texture?:string)
     {
@@ -11,19 +13,28 @@ export class BombGroup extends ngGroup
         this.create();
     }
 
-    addBomb(y:number, offsetPosition:number = 300, texture?:string)
+    addBomb(y:number, offsetPosition:number = 300, texture?:string, frame?:number)
     {
-        const x = (offsetPosition < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-        const bomb = this.group.create(x, y, texture || this.texture);
+        const x = offsetPosition; // (offsetPosition < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+        const bomb = this.group.create(x, y, texture || this.texture, frame || this.frame);
 
         const size = Phaser.Math.Between(5, 35);
 
         bomb.setBounce(1);
-        // bomb.setCollideWorldBounds(true);
+        bomb.setCollideWorldBounds(true);
         bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
         bomb.setMaxVelocity(250);
         bomb.setScale(Phaser.Math.Between(1.1, 2.5));
-        bomb.allowGravity = false;
+        bomb.body.allowGravity = false;
+
+        this.scene.anims.create({
+            key: 'go',
+            frames: this.scene.anims.generateFrameNumbers('tiles', { start: 1615, end: 1618 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        bomb.anims.play("go");
 
         return bomb;
     }
@@ -35,6 +46,7 @@ export class BombGroup extends ngGroup
 
     update()
     {
+        return;
         // bombs will screen-wrap
         this.group.children.iterate(sprite => {
             if (sprite.x < 0)

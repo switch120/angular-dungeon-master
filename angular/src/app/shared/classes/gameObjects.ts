@@ -21,10 +21,11 @@ export class ngGameObject implements IGameObject
 }
 export class ngArcadeSprite extends ngGameObject
 {
-    protected config = {
+    protected spriteConfig = {
         x: 0,
         y: 0,
-        texture: ""
+        texture: "",
+        frame: 0
     };
 
     protected _sprite:Phaser.Physics.Arcade.Sprite;
@@ -39,15 +40,19 @@ export class ngArcadeSprite extends ngGameObject
         return this._isAlive;
     }
 
-    constructor(scene:Phaser.Scene, x:number, y:number, texture:string)
-    {
-        super(scene);
-        this.config = {x, y, texture};
+    public get visible():boolean {
+        return this._sprite ? this._sprite.visible : false;
     }
 
-    public create()
+    constructor(scene:Phaser.Scene, x:number, y:number, texture?:string, frame?:number)
     {
-        this._sprite = this.scene.physics.add.sprite(this.config.x, this.config.y, this.config.texture);
+        super(scene);
+        this.spriteConfig = {x, y, texture, frame};
+    }
+
+    public create(x?:number, y?:number)
+    {
+        this._sprite = this.scene.physics.add.sprite(x || this.spriteConfig.x, y || this.spriteConfig.y, this.spriteConfig.texture, this.spriteConfig.frame);
     }
 
     public kill() {
@@ -67,13 +72,14 @@ export class ngArcadeSprite extends ngGameObject
 export class ngGroup extends ngGameObject
 {
     protected _group:Phaser.Physics.Arcade.Group;
+    protected _groupConfig:GroupCreateConfig;
 
     public get group():Phaser.Physics.Arcade.Group {
         return this._group;
     }
 
-    public create() {
-        this._group = this._scene.physics.add.group();
+    public create(config?:GroupConfig) {
+        this._group = this._scene.physics.add.group(config);
     }
 
     public collideWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(player:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
