@@ -4,6 +4,7 @@ import { Component, ViewChild, ElementRef, OnInit, AfterViewInit } from '@angula
 import * as Phaser from 'phaser';
 import { Players } from './shared/classes/player';
 import { ngStars } from './shared/classes/collectibles';
+import { Scenes } from './shared/classes/scenes';
 
 @Component({
     selector: 'app-root',
@@ -12,7 +13,7 @@ import { ngStars } from './shared/classes/collectibles';
 })
 export class AppComponent implements OnInit, AfterViewInit {
 
-    private player: Players.ngPlayerCharacter;
+    // private player: Players.ngPlayerCharacter;
 
     private gameData = {
         over: false,
@@ -23,24 +24,24 @@ export class AppComponent implements OnInit, AfterViewInit {
         deceleration: 20
     }
 
-    private mapConfig:IMapConfig = {
-        tilemap: {
-            tilesetName: 'base-tiles',
-            jsonPath: 'assets/tilemaps/dungeon_1.json',
-            deceleration: this.gameData.deceleration
-        },
-        spritesheetPath: 'assets/tilemaps/dungeon_1.png'
-    }
+    // private mapConfig:IMapConfig = {
+    //     tilemap: {
+    //         tilesetName: 'base-tiles',
+    //         jsonPath: 'assets/tilemaps/dungeon_1.json',
+    //         deceleration: this.gameData.deceleration
+    //     },
+    //     spritesheetPath: 'assets/tilemaps/dungeon_1.png'
+    // }
+
+    // private map:ngMap;
 
     private game: Phaser.Game;
 
     private config: any;
 
-    private map:ngMap;
-
-    private platforms:any[] = [];
+    // private platforms:any[] = [];
     private stars: ngStars;
-    private bombs: BombGroup;
+    // private bombs: BombGroup;
 
     constructor() {
         const _t = this;
@@ -55,12 +56,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                     gravity: { y: 600 }
                 }
             },
-            scene: {
-                preload: function () { _t.preload(this) },
-                create: function () { _t.create(this) },
-                update: function () { _t.update(this) },
-                render: this.render
-            }
+            scene: [Scenes.PlayerSelect, Scenes.Dungeon_1]
         };
     }
 
@@ -72,19 +68,19 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.game = new Phaser.Game(this.config);
     }
 
-    preload(scene: Phaser.Scene) {
+    // preload(scene: Phaser.Scene) {
 
-        this.map = new ngMap(scene, this.mapConfig);
-        this.map.loadAssets();
+    //     this.map = new ngMap(scene, this.mapConfig);
+    //     this.map.loadAssets();
         
-        BombGroup.loadAssets(scene);
-        Players.ngPlayerCharacter.loadAssets(scene);
+    //     BombGroup.loadAssets(scene);
+    //     Players.ngPlayerCharacter.loadAssets(scene);
 
-        ngStars.loadAssets(scene);
-    }
+    //     ngStars.loadAssets(scene);
+    // }
 
     create(scene: Phaser.Scene) {
-
+/*
         // load the map 
         this.map.create();
         
@@ -153,7 +149,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             
             bomb.setVelocity(vX, vY);
         });
-
+*/
         // collect the stars
         /*this.player.overlapWith(this.stars.group, (sprite, star) => {
             star.disableBody(true, true);
@@ -173,7 +169,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 }
             }
         });*/
-
+/*
         // projectiles collide w/ bombs
         this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
         
@@ -181,34 +177,34 @@ export class AppComponent implements OnInit, AfterViewInit {
         // this.player.projectilesOverlapWith([this.map.pathLayer, ...this.platforms, this.map.staticSpikesGroup, this.map.dynamicsSpikesGroup], (projectile, platform) => { 
         //     projectile.destroy();
         // });
-
+*/
     }
 
     update(scene: Phaser.Scene) {
 
-        if (this.gameData.over) 
-        {
-            const cam = scene.cameras.main;
-            cam.shake(100, 0.05);
-            cam.fade(250, 0, 0, 0);
+        // if (this.gameData.over) 
+        // {
+        //     const cam = scene.cameras.main;
+        //     cam.shake(100, 0.05);
+        //     cam.fade(250, 0, 0, 0);
 
-            // Freeze the player to leave them on screen while fading but remove the marker immediately
-            // this.player.sprite.fr.freeze();
-            // this.marker.destroy();
+        //     // Freeze the player to leave them on screen while fading but remove the marker immediately
+        //     // this.player.sprite.fr.freeze();
+        //     // this.marker.destroy();
 
-            cam.once("camerafadeoutcomplete", () => {
-                // scene.scene.restart();
-                // this.player.sprite.destroy();
-                this.player.respawn(this.map);
-                this.gameData.over = false;
-                cam.fadeIn();
-            });
-        };
+        //     cam.once("camerafadeoutcomplete", () => {
+        //         // scene.scene.restart();
+        //         // this.player.sprite.destroy();
+        //         this.player.respawn(this.map);
+        //         this.gameData.over = false;
+        //         cam.fadeIn();
+        //     });
+        // };
 
-        this.map.update();
+        // this.map.update();
 
-        this.player.update();
-        this.bombs.update();
+        // this.player.update();
+        // this.bombs.update();
 
     }
 

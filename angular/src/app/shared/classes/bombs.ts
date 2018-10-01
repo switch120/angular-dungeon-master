@@ -48,7 +48,7 @@ export class BombGroup extends ngGroup
     {
         return;
         // bombs will screen-wrap
-        this.group.children.iterate(sprite => {
+        /*this.group.children.iterate(sprite => {
             if (sprite.x < 0)
             {
                 sprite.x = this._scene.game.canvas.width;
@@ -66,7 +66,7 @@ export class BombGroup extends ngGroup
             {
                 sprite.y = this._scene.game.canvas.height;
             }
-        });
+        });*/
     }
     projectileCollide(bullet:Phaser.Physics.Arcade.Sprite, bomb:Phaser.Physics.Arcade.Sprite)
     {        

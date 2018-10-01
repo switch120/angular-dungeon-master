@@ -17,7 +17,8 @@ export namespace Players
         meleeWeapons:ngMeleeWeapon[],
         activeMelee?:ngMeleeWeapon,
         rangedWeapons:Projectiles.ngProjectileGroup[],
-        activeRanged?:Projectiles.ngProjectileGroup
+        activeRanged?:Projectiles.ngProjectileGroup,
+        idleTimeout?:any,
     }
 
     export interface IPlayerSettings {
@@ -29,7 +30,6 @@ export namespace Players
         maxVelocityY:number,                
         accelerationX:number,
         accelerationY:number,
-        idleTimeout?:any,
         idleTimeoutMs?:number
     }
 
@@ -49,6 +49,7 @@ export namespace Players
             maxVelocityY: 250,
             accelerationX: 2000,
             accelerationY: 2000,
+            idleTimeoutMs: 325
         }
 
         private _cursors:Phaser.Input.Keyboard.CursorKeys;
@@ -180,6 +181,22 @@ export namespace Players
                 this.sprite.setAccelerationY(0);
             }
 
+            // are any movement controls down?
+            const movementDown = Object.keys(this._cursors).reduce((isDown:boolean,cur:string) => {
+                return this._cursors[cur].isDown ? true : isDown;
+            }, false);
+
+            if (!this._state.idleTimeout && this.sprite.anims.isPlaying && !movementDown) {
+                console.log("waiting");
+                this._state.idleTimeout = setTimeout(() => this.sprite.anims.stop(), this._settings.idleTimeoutMs);
+            }
+            else if (this._state.idleTimeout && movementDown)
+            {
+                console.log("clearing");
+                clearTimeout(this._state.idleTimeout);
+                this._state.idleTimeout = null;
+            }
+
             this._state.activeMelee.update();
 
         }
@@ -214,6 +231,7 @@ export namespace Players
         {
             scene.load.spritesheet('ninja', 'assets/sprites/ninja_m.png', { frameWidth: 32, frameHeight: 36 });
             scene.load.spritesheet('jedi', 'assets/sprites/jedi.png', { frameWidth: 32, frameHeight: 48 });
+            scene.load.spritesheet('sith', 'assets/sprites/sith.png', { frameWidth: 32, frameHeight: 48 });
         }
     }
 
@@ -226,13 +244,42 @@ export namespace Players
         }
     }
 
-    export class Jedi extends BasePlayerCharacter
-    {
-        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "jedi")
+    export class ThreeFramePlayer extends BasePlayerCharacter {
+        addAnimations()
         {
-            super(scene, x, y, texture);
-        }
+            if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
 
+            this.scene.anims.create({
+                key: `${this._settings.texture}_left`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 9, end: 11 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_right`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 3, end: 5 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_up`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 0, end: 2 }),
+                frameRate: 10,
+                repeat: 2
+            });
+
+            this.scene.anims.create({
+                key: `${this._settings.texture}_down`,
+                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 6, end: 8 }),
+                frameRate: 10,
+                repeat: 2
+            });
+        }
+    }
+
+    export class FourFramePlayer extends BasePlayerCharacter {
         addAnimations()
         {
             if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
@@ -266,45 +313,26 @@ export namespace Players
             });
         }
     }
+
+    export class Jedi extends FourFramePlayer
+    {
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "jedi")
+        {
+            super(scene, x, y, texture);
+        }
+    }
+    export class Sith extends FourFramePlayer
+    {
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "sith")
+        {
+            super(scene, x, y, texture);
+        }
+    }
     export class Ninja extends BasePlayerCharacter
     {
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "ninja")
         {
             super(scene, x, y, texture);
-        }
-
-        addAnimations()
-        {
-            console.log(`${this._settings.texture}_down`);
-            if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
-
-            this.scene.anims.create({
-                key: `${this._settings.texture}_left`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 9, end: 11 }),
-                frameRate: 10,
-                repeat: 2
-            });
-
-            this.scene.anims.create({
-                key: `${this._settings.texture}_right`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 3, end: 5 }),
-                frameRate: 10,
-                repeat: 2
-            });
-
-            this.scene.anims.create({
-                key: `${this._settings.texture}_up`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 0, end: 2 }),
-                frameRate: 10,
-                repeat: 2
-            });
-
-            this.scene.anims.create({
-                key: `${this._settings.texture}_down`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 6, end: 8 }),
-                frameRate: 10,
-                repeat: 2
-            });
         }
     }
 }
