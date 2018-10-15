@@ -1,6 +1,6 @@
 import { ngMap } from './map';
 import { ngArcadeSprite } from "./gameObjects";
-import { ngMeleeWeapon } from './meleeWeapons';
+import { MeleeWeapons } from './meleeWeapons';
 import { Projectiles } from './projectiles';
 
 export namespace Players
@@ -14,8 +14,8 @@ export namespace Players
 
     export interface IPlayerState {
         movementVector:number,
-        meleeWeapons:ngMeleeWeapon[],
-        activeMelee?:ngMeleeWeapon,
+        meleeWeapons:MeleeWeapons.ngMeleeWeapon[],
+        activeMelee?:MeleeWeapons.ngMeleeWeapon,
         rangedWeapons:Projectiles.ngProjectileGroup[],
         activeRanged?:Projectiles.ngProjectileGroup,
         idleTimeout?:any,
@@ -54,7 +54,7 @@ export namespace Players
 
         private _cursors:Phaser.Input.Keyboard.CursorKeys;
         
-        public get meleeWeapon():ngMeleeWeapon {
+        public get meleeWeapon():MeleeWeapons.ngMeleeWeapon {
             return this._state.activeMelee;
         }
 
@@ -103,7 +103,7 @@ export namespace Players
 
             this._state.activeRanged = this._state.rangedWeapons[0];
 
-            this._state.meleeWeapons.push(new ngMeleeWeapon(this, 'tiles', 5660));
+            this._state.meleeWeapons.push(new MeleeWeapons.ngMeleeWeapon(this, 'tiles', 5660));
             this._state.activeMelee = this._state.meleeWeapons[0];
             
             this.registerInputHandler();
@@ -119,6 +119,9 @@ export namespace Players
             });
 
             this.scene.input.keyboard.on('keydown_SHIFT', (evt) => {
+                // put the melee weapon in front of player sprite if they're facing downward
+                this._state.activeMelee.sprite.depth = this._state.movementVector == 90 ? 2 : 0;
+                
                 if (!this.isAlive || this._state.activeMelee.visible) return;
                 this._state.activeMelee.slash();
             });

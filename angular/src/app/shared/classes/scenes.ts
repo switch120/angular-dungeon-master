@@ -9,22 +9,60 @@ export namespace Scenes {
         protected mapConfig:IMapConfig = null;
         protected sceneData:any;
 
+        protected map:ngMap;
+
         init(data:any) {
             this.sceneData = data;    
+        }
+
+        preload() {
+            if (this.mapConfig)
+            {
+                this.map = new ngMap(this, this.mapConfig);
+                this.map.loadAssets();
+            } 
+            Players.ngPlayerCharacter.loadAssets(this);
         }
     }
     export class PlayerSelect extends ngScene {
         constructor ()
         {
-            super({ key: 'player_select' });
+            super({ key: 'player_config' });
+
+            this.mapConfig = {
+                tilemap: {
+                    tilesetName: 'base-tiles',
+                    jsonPath: 'assets/tilemaps/player_config.json',
+                    mapData: { key: "playerconfig" }
+                },
+                spritesheetPath: 'assets/tilemaps/dungeon_1.png'
+            }
+        }
+
+        preload() {
+            super.preload();
         }
 
         create() {
-            this.input.once("pointerdown", () => {
-                this.scene.start("level_1", {
-                    player: "Sith"
+            // load the map 
+            this.map.create();
+
+            this.map.map.objects[0].objects.forEach( (obj:any) => {
+                let player:Players.BasePlayerCharacter = new (Players)[obj.name](this, obj.x, obj.y);
+                player.create();
+                player.sprite.setInteractive();
+                player.sprite.once("pointerdown", () => {
+                    this.scene.start("level_1", {
+                        player: obj.name
+                    });
                 });
             });
+
+            // this.input.once("pointerdown", () => {
+            //     this.scene.start("level_1", {
+            //         player: "Sith"
+            //     });
+            // });
         }
     }
     export class Dungeon_1 extends ngScene {
@@ -32,8 +70,6 @@ export namespace Scenes {
         private player: Players.ngPlayerCharacter;
         private bombs: BombGroup;
         private config: any;
-    
-        private map:ngMap;
 
         constructor ()
         {
@@ -51,12 +87,9 @@ export namespace Scenes {
     
         preload() {
 
-            this.map = new ngMap(this, this.mapConfig);
-            this.map.loadAssets();
+            super.preload();
             
             BombGroup.loadAssets(this);
-            Players.ngPlayerCharacter.loadAssets(this);
-    
             // ngStars.loadAssets(this);
         }
     

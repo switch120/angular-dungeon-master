@@ -7,7 +7,7 @@ export interface IMapConfig
         pathLayer?:string;
         backgroundLayer?:string;
         foregroundLayer?:string;
-        deceleration:number
+        deceleration?:number
     }
     spritesheetPath:string;
     spritesheetConfig?: {
@@ -86,7 +86,7 @@ export class ngMap
         config = { ...config, ...mapConfig, tilemap: { ...config.tilemap, ...mapConfig.tilemap } };
         
         // map made with Tiled in JSON format
-        scene.load.tilemapTiledJSON('map', config.tilemap.jsonPath);
+        scene.load.tilemapTiledJSON(config.tilemap.mapData.key, config.tilemap.jsonPath);
         
         // tiles in spritesheet 
         scene.load.spritesheet('tiles', config.spritesheetPath, config.spritesheetConfig);
@@ -96,7 +96,7 @@ export class ngMap
     }
     create()
     {
-        this._map = this._scene.make.tilemap({key: 'map'});
+        this._map = this._scene.make.tilemap({key: this._config.tilemap.mapData.key});
 
         let tiles = this._map.addTilesetImage(this._config.tilemap.tilesetName, 'tiles');
 
