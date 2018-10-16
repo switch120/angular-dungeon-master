@@ -29,21 +29,23 @@ export namespace Projectiles {
             this._groupConfig = groupConfig;
         }
 
-        create()
+        public create()
         {
             super.create(this._groupConfig);
             return this;
         }
 
-        setAnimation(config:AnimationConfig)
+        public setAnimation(config:AnimationConfig)
         {
-            if (this.scene.anims.get(config.key)) return;
-
-            this.scene.anims.create(config);
+            // set the animation (even if it's been created)
             this._animationConfig = config; 
+            
+            /// don't recreate the same animation; the scene shares them, so all players can use them once loaded
+            if (this.scene.anims.get(config.key)) return;
+            this.scene.anims.create(config);
         }
 
-        fire()
+        public fire()
         {
             this._group.children.getArray().forEach( (child:Phaser.Physics.Arcade.Sprite, index) => {
                 let x = Math.round(child.x);
@@ -105,7 +107,7 @@ export namespace Projectiles {
     }
     export class ThrowingAxe extends ngProjectileGroup
     {
-        create()
+        public create()
         {
             super.create();
 
@@ -126,7 +128,7 @@ export namespace Projectiles {
     }
     export class StandardArrow extends ngProjectileGroup
     {
-        create()
+        public create()
         {
             this._groupConfig.frame = 1565;
             super.create();
@@ -145,7 +147,7 @@ export namespace Projectiles {
     }
     export class BlueMagicOrb extends ngProjectileGroup
     {
-        create()
+        public create()
         {
             super.create();
 
@@ -167,7 +169,7 @@ export namespace Projectiles {
 
     export class FireBall extends ngProjectileGroup
     {
-        create()
+        public create()
         {
             super.create();
 

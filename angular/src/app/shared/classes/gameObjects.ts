@@ -21,11 +21,12 @@ export class ngGameObject implements IGameObject
 }
 export class ngArcadeSprite extends ngGameObject
 {
-    protected spriteConfig = {
+    public spriteConfig = {
         x: 0,
         y: 0,
         texture: "",
-        frame: 0
+        frame: 0,
+        health: 0
     };
 
     protected _sprite:Phaser.Physics.Arcade.Sprite;
@@ -44,15 +45,52 @@ export class ngArcadeSprite extends ngGameObject
         return this._sprite ? this._sprite.visible : false;
     }
 
-    constructor(scene:Phaser.Scene, x:number, y:number, texture?:string, frame?:number)
+    protected _healthBar:Phaser.GameObjects.Graphics;
+    public get healthBar():Phaser.GameObjects.Graphics {
+        return this._healthBar;
+    }
+
+    constructor(scene:Phaser.Scene, x:number, y:number, texture?:string, frame?:number, health?:number)
     {
         super(scene);
-        this.spriteConfig = {x, y, texture, frame};
+        this.spriteConfig = {x, y, texture, frame, health};
     }
 
     public create(x?:number, y?:number)
     {
         this._sprite = this.scene.physics.add.sprite(x || this.spriteConfig.x, y || this.spriteConfig.y, this.spriteConfig.texture, this.spriteConfig.frame);
+        
+        if (this.spriteConfig.health)
+        {
+            this._healthBar = this.scene.add.graphics();
+            
+            this._healthBar.lineStyle(2, 0xFFFFFF, 1.0);
+            this._healthBar.fillStyle(0xFF0000, .8);
+            this._healthBar.fillRect(0, 0, 60, 10);
+            this._healthBar.strokeRect(0, 0, 60, 10);
+            this._healthBar.setDepth(5);
+
+            this._healthBar.setData("max-health", this.spriteConfig.health);
+            this._healthBar.setData("current-health", this.spriteConfig.health);
+
+            /*
+            var color = 0xffff00;
+            var thickness = 4;
+            var alpha = 1;
+
+            graphics.lineStyle(thickness, color, alpha);
+
+            graphics.beginPath();
+
+            graphics.moveTo(400, 100);
+            graphics.lineTo(200, 278);
+            graphics.lineTo(340, 430);
+            graphics.lineTo(650, 80);
+
+            graphics.closePath();
+            graphics.strokePath();
+            */
+        }
     }
 
     public kill() {

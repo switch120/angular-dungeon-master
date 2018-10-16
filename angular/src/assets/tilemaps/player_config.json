@@ -50,8 +50,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":229.77022977023,
-                 "y":244.301153392062
+                 "x":175.279036418127,
+                 "y":215.147335482699
                 }, 
                 {
                  "height":0,
@@ -62,8 +62,56 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":392.334937789483,
-                 "y":242.484787939333
+                 "x":303.333092816275,
+                 "y":216.055883661793
+                }, 
+                {
+                 "height":0,
+                 "id":6,
+                 "name":"MaraJade",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":239.76023976024,
+                 "y":215.055671601126
+                }, 
+                {
+                 "height":0,
+                 "id":7,
+                 "name":"DarthSidious",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":366.905821451276,
+                 "y":216.147488874762
+                }, 
+                {
+                 "height":0,
+                 "id":8,
+                 "name":"ShieldMaiden",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":433.203160475888,
+                 "y":215.963854327491
+                }, 
+                {
+                 "height":0,
+                 "id":9,
+                 "name":"Ninja",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":111.431023521933,
+                 "y":214.882027063845
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -71,7 +119,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":6,
+ "nextobjectid":10,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.1.6",

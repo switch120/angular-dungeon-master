@@ -49,7 +49,9 @@ export namespace Scenes {
 
             this.map.map.objects[0].objects.forEach( (obj:any) => {
                 let player:Players.BasePlayerCharacter = new (Players)[obj.name](this, obj.x, obj.y);
+                player.spriteConfig.health = null;
                 player.create();
+                player.addAnimations();
                 player.sprite.setInteractive();
                 player.sprite.once("pointerdown", () => {
                     this.scene.start("level_1", {
@@ -111,6 +113,7 @@ export namespace Scenes {
             // this.player = new Players.Jedi(this, spawnPoint.x, spawnPoint.y);
             // this.player = new this.sceneData.player(this, spawnPoint.x, spawnPoint.y);
             this.player = new (Players)[this.sceneData.player](this, spawnPoint.x, spawnPoint.y);
+            this.player.create();
             this.player.addAnimations();
 
             // collide with main path layer, and moving (dynamic) platforms

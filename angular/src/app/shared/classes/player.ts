@@ -105,7 +105,7 @@ export namespace Players
 
             this._state.meleeWeapons.push(new MeleeWeapons.ngMeleeWeapon(this, 'tiles', 5660));
             this._state.activeMelee = this._state.meleeWeapons[0];
-            
+
             this.registerInputHandler();
 
             this.scene.cameras.main.startFollow(this.sprite);
@@ -137,9 +137,13 @@ export namespace Players
             });
         }
 
-        update()
+        public update()
         {
             if (!this.isAlive || !this.sprite.body) return;
+
+            // move the health bar with the player
+            this.healthBar.setX(this.sprite.getCenter().x - 30);
+            this.healthBar.setY(this.sprite.y - 40);
 
             const diagonal = (this._cursors.left.isDown || this._cursors.right.isDown) && (this._cursors.up.isDown || this._cursors.down.isDown);
             const weaponVisible = this._state.activeMelee.visible;
@@ -203,7 +207,7 @@ export namespace Players
             this._state.activeMelee.update();
 
         }
-        kill()
+        public kill()
         {
             if (!this.isAlive) this.kill();
 
@@ -211,7 +215,7 @@ export namespace Players
             this.sprite.setAcceleration(0,0).setVelocity(0,0);
             this.sprite.visible = false;
         }
-        respawn(map:ngMap) {
+        public respawn(map:ngMap) {
             let {x, y}:any = map.getSpawnPoint();
             this.sprite.clearTint();
             this.sprite.visible = true;
@@ -223,7 +227,7 @@ export namespace Players
             this.scene.physics.add.overlap(this._state.rangedWeapons.map(elem => elem.group), object, callback);
         }
 
-        addAnimations()
+        public addAnimations()
         {   
             // needed for interface
             return;
@@ -233,22 +237,26 @@ export namespace Players
         public static loadAssets(scene:Phaser.Scene)
         {
             scene.load.spritesheet('ninja', 'assets/sprites/ninja_m.png', { frameWidth: 32, frameHeight: 36 });
+            scene.load.spritesheet('warrior_f', 'assets/sprites/warrior_f.png', { frameWidth: 32, frameHeight: 36 });
             scene.load.spritesheet('jedi', 'assets/sprites/jedi.png', { frameWidth: 32, frameHeight: 48 });
+            scene.load.spritesheet('marajade', 'assets/sprites/marajade.png', { frameWidth: 32, frameHeight: 48 });
             scene.load.spritesheet('sith', 'assets/sprites/sith.png', { frameWidth: 32, frameHeight: 48 });
+            scene.load.spritesheet('darthsidious', 'assets/sprites/darthsidious.png', { frameWidth: 32, frameHeight: 48 });
         }
     }
 
-    export class BasePlayerCharacter extends ngPlayerCharacter {
+    export class BasePlayerCharacter extends ngPlayerCharacter implements IPlayerCharacter {
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
         {
             super(scene, x, y, texture);
             this._settings.texture = texture;
-            this.create();
+            this.spriteConfig.health = 1000;
+            // this.create();
         }
     }
 
-    export class ThreeFramePlayer extends BasePlayerCharacter {
-        addAnimations()
+    export class ThreeFramePlayer extends BasePlayerCharacter implements IPlayerCharacter {
+        public addAnimations()
         {
             if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
 
@@ -279,11 +287,16 @@ export namespace Players
                 frameRate: 10,
                 repeat: 2
             });
+
+            // three frame players need to be set to down or they're facing upward to start (spritesheet configuration)
+            this.sprite.anims.play(`${this._settings.texture}_down`, true);
+            this.sprite.anims.stop();
+            this._state.movementVector = 90;
         }
     }
 
-    export class FourFramePlayer extends BasePlayerCharacter {
-        addAnimations()
+    export class FourFramePlayer extends BasePlayerCharacter implements IPlayerCharacter {
+        public addAnimations()
         {
             if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
 
@@ -324,6 +337,13 @@ export namespace Players
             super(scene, x, y, texture);
         }
     }
+    export class MaraJade extends FourFramePlayer
+    {
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "marajade")
+        {
+            super(scene, x, y, texture);
+        }
+    }
     export class Sith extends FourFramePlayer
     {
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "sith")
@@ -331,9 +351,23 @@ export namespace Players
             super(scene, x, y, texture);
         }
     }
-    export class Ninja extends BasePlayerCharacter
+    export class DarthSidious extends FourFramePlayer
+    {
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "darthsidious")
+        {
+            super(scene, x, y, texture);
+        }
+    }
+    export class Ninja extends ThreeFramePlayer
     {
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "ninja")
+        {
+            super(scene, x, y, texture);
+        }
+    }
+    export class ShieldMaiden extends ThreeFramePlayer
+    {
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "warrior_f")
         {
             super(scene, x, y, texture);
         }
