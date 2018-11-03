@@ -49,6 +49,7 @@ export namespace Scenes {
 
             this.map.map.objects[0].objects.forEach( (obj:any) => {
                 let player:Players.BasePlayerCharacter = new (Players)[obj.name](this, obj.x, obj.y);
+                player.maxHealth = null;
                 player.create();
                 player.addAnimations();
                 player.sprite.setInteractive();

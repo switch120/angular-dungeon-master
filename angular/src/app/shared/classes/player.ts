@@ -37,12 +37,6 @@ export namespace Players
 
     export class ngPlayerCharacter extends ngLivingSprite implements IPlayerCharacter
     {
-        // protected _state:IPlayerState = {
-        //     movementVector: 270,
-        //     meleeWeapons: [],
-        //     rangedWeapons: [],
-        // }
-
         protected _settings:IPlayerSettings = {
             drag: 900,
             bounce: 0.3,
@@ -55,12 +49,6 @@ export namespace Players
         }
 
         private _cursors:Phaser.Input.Keyboard.CursorKeys;
-
-        // public get movementVector():number {
-        //     return this._state.movementState.vector;
-        // }
-
-        
 
         public get accelleration():number {
             // todo: support vertical movement
@@ -80,6 +68,17 @@ export namespace Players
         public create(x?:number, y?:number)
         {
             super.create(x, y);
+
+            this._movementSettings = {
+                drag: 900,
+                bounce: 0.3,
+                turboCoefficient: 1.5,
+                maxVelocityX: 250,
+                maxVelocityY: 250,
+                accelerationX: 2000,
+                accelerationY: 2000,
+                idleTimeoutMs: 325
+            };
 
             this.sprite.setBounce(this._settings.bounce);
             this.sprite.setCollideWorldBounds(true);
@@ -207,7 +206,6 @@ export namespace Players
         {
             super(scene, x, y, texture, 1000);
             this._settings.texture = texture;
-            // this.spriteConfig.maxHealth = this.spriteConfig.currentHealth 1000;
         }
 
         public registerInputHandler() {
