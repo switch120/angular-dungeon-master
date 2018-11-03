@@ -38,7 +38,7 @@ export namespace MeleeWeapons {
         private slashInterval() {
             if (!this._sprite.visible)
             {
-                switch (this._player.movementVector)
+                switch (this._player.movementState.vector)
                 {
                     case 0:
                         this._sprite.flipX = false;
@@ -49,9 +49,9 @@ export namespace MeleeWeapons {
 
                     case 90:
                         this._sprite.flipY = true;
-                        this._sprite.flipX = false;
-                        this._sprite.setOrigin(0, 0);
-                        this._sprite.rotation = -.5;
+                        this._sprite.flipX = true;
+                        this._sprite.setOrigin(1, 0);
+                        this._sprite.setRotation(-1.75);
                         break;
 
                     case 180:
@@ -65,30 +65,31 @@ export namespace MeleeWeapons {
                         this._sprite.flipX = true;
                         this._sprite.flipY = false;
                         this._sprite.setOrigin(1, 1);
-                        this._sprite.rotation = -1.25;
+                        this._sprite.rotation = -2;
                         break;
                 }
             }
 
             this._sprite.visible = true;
 
-            const weaponSpeed = .3;
+            const weaponSpeed = .4;
             const interval = 15;
 
-            if (!this._player.movementVector && this._sprite.rotation < 1.5)
+            if (!this._player.movementState.vector && this._sprite.rotation < 1.5)
             {
                 this._sprite.setRotation(this._sprite.rotation + weaponSpeed);
             }
-            else if (this._player.movementVector == 180 && this._sprite.rotation > -1.5)
+            else if (this._player.movementState.vector == 180 && this._sprite.rotation > -1.5)
             {
                 this._sprite.setRotation(this._sprite.rotation - weaponSpeed);
             }
-            else if (this._player.movementVector == 270 && this._sprite.rotation < .25)
+            else if (this._player.movementState.vector == 270 && this._sprite.rotation <= .75)
             {
                 this._sprite.setRotation(this._sprite.rotation + weaponSpeed);
             }
-            else if (this._player.movementVector == 90 && this._sprite.rotation < 1)
+            else if (this._player.movementState.vector == 90 && this._sprite.rotation <= .75)
             {
+                console.log(this._sprite.rotation);
                 this._sprite.setRotation(this._sprite.rotation + weaponSpeed);
             }
             else
@@ -107,7 +108,8 @@ export namespace MeleeWeapons {
                 y: 0
             };
 
-            switch (this._player.movementVector)
+            // define weapon offset position based on the movementVector
+            switch (this._player.movementState.vector)
             {
                 case 0:
                     offset.x = -5;
@@ -115,8 +117,8 @@ export namespace MeleeWeapons {
                     break;
 
                 case 90:
-                    offset.x = 0;
-                    offset.y = 0;
+                    offset.x = 4;
+                    offset.y = 2;
                     break;
 
                 case 180:
@@ -126,8 +128,8 @@ export namespace MeleeWeapons {
 
 
                 case 270:
-                    offset.x = 5;
-                    offset.y = 2;
+                    offset.x = 8;
+                    offset.y = -2;
                     break;
             }
 

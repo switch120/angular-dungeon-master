@@ -49,7 +49,6 @@ export namespace Scenes {
 
             this.map.map.objects[0].objects.forEach( (obj:any) => {
                 let player:Players.BasePlayerCharacter = new (Players)[obj.name](this, obj.x, obj.y);
-                player.spriteConfig.health = null;
                 player.create();
                 player.addAnimations();
                 player.sprite.setInteractive();
@@ -59,12 +58,6 @@ export namespace Scenes {
                     });
                 });
             });
-
-            // this.input.once("pointerdown", () => {
-            //     this.scene.start("level_1", {
-            //         player: "Sith"
-            //     });
-            // });
         }
     }
     export class Dungeon_1 extends ngScene {
@@ -80,7 +73,7 @@ export namespace Scenes {
             this.mapConfig = {
                 tilemap: {
                     tilesetName: 'base-tiles',
-                    jsonPath: 'assets/tilemaps/dungeon_1.json',
+                    jsonPath: 'assets/tilemaps/dungeon_1_new.json',
                     deceleration: 20
                 },
                 spritesheetPath: 'assets/tilemaps/dungeon_1.png'
@@ -110,19 +103,25 @@ export namespace Scenes {
             // Instantiate a player instance at the location of the "Spawn Point" object in the Tiled map
             const spawnPoint:any = this.map.getSpawnPoint();
 
-            // this.player = new Players.Jedi(this, spawnPoint.x, spawnPoint.y);
-            // this.player = new this.sceneData.player(this, spawnPoint.x, spawnPoint.y);
             this.player = new (Players)[this.sceneData.player](this, spawnPoint.x, spawnPoint.y);
             this.player.create();
+            this.player.addWeapons();
             this.player.addAnimations();
+            this.player.registerInputHandler();
+
+            // start following the player's character
+            this.cameras.main.startFollow(this.player.sprite);
 
             // collide with main path layer, and moving (dynamic) platforms
             this.player.collideWith([this.map.pathLayer], (player, platform) => this.map.platformCollide(player, platform));
-            
-            // collide with spikes and bombs
-            this.player.collideWith([this.map.dynamicsSpikesGroup, this.map.staticSpikesGroup], () => {
-                // this.gameData.over = true;
-                this.player.kill();
+
+            this.player.collideWith(this.bombs.group, (player, bomb) => {
+                if (!this.player.meleeWeapon.visible)
+                {
+                    this.player.hit({
+                        hitPoints: 10
+                    });
+                }
             });
 
             this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
@@ -133,7 +132,7 @@ export namespace Scenes {
                 const nudge = 50;
                 let vX, vY;
 
-                switch(this.player.movementVector)
+                switch(this.player.movementState.vector)
                 {
                     // right / left - only affects x axis
                     case 0:
@@ -165,7 +164,7 @@ export namespace Scenes {
             this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
             
             // projectiles collide with pathlayer
-            // this.player.projectilesOverlapWith([this.map.pathLayer, ...this.platforms, this.map.staticSpikesGroup, this.map.dynamicsSpikesGroup], (projectile, platform) => { 
+            // this.player.projectilesCollideWith([this.map.pathLayer], (projectile, platform) => { 
             //     projectile.destroy();
             // });
         }

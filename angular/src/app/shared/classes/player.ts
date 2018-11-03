@@ -1,5 +1,5 @@
 import { ngMap } from './map';
-import { ngArcadeSprite } from "./gameObjects";
+import { ngLivingSprite } from "./gameObjects";
 import { MeleeWeapons } from './meleeWeapons';
 import { Projectiles } from './projectiles';
 
@@ -7,6 +7,8 @@ export namespace Players
 {
     export interface IPlayerCharacter {
         addAnimations()
+        addWeapons()
+        registerInputHandler()
         update()
         kill()
         respawn(map:ngMap)
@@ -33,13 +35,13 @@ export namespace Players
         idleTimeoutMs?:number
     }
 
-    export class ngPlayerCharacter extends ngArcadeSprite implements IPlayerCharacter
+    export class ngPlayerCharacter extends ngLivingSprite implements IPlayerCharacter
     {
-        protected _state:IPlayerState = {
-            movementVector: 270,
-            meleeWeapons: [],
-            rangedWeapons: [],
-        }
+        // protected _state:IPlayerState = {
+        //     movementVector: 270,
+        //     meleeWeapons: [],
+        //     rangedWeapons: [],
+        // }
 
         protected _settings:IPlayerSettings = {
             drag: 900,
@@ -53,18 +55,12 @@ export namespace Players
         }
 
         private _cursors:Phaser.Input.Keyboard.CursorKeys;
+
+        // public get movementVector():number {
+        //     return this._state.movementState.vector;
+        // }
+
         
-        public get meleeWeapon():MeleeWeapons.ngMeleeWeapon {
-            return this._state.activeMelee;
-        }
-
-        public get movementVector():number {
-            return this._state.movementVector;
-        }
-
-        public get projectiles():Phaser.Physics.Arcade.Group {
-            return this._state.activeRanged.group;
-        }
 
         public get accelleration():number {
             // todo: support vertical movement
@@ -76,9 +72,9 @@ export namespace Players
             return this._cursors;
         }
 
-        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player", maxHealth?:number)
         {
-            super(scene, x, y, texture);
+            super(scene, x, y, texture, null, maxHealth);
         }
 
         public create(x?:number, y?:number)
@@ -93,48 +89,6 @@ export namespace Players
             this.sprite.setVelocity(0, 0);
             this.sprite.setMaxVelocity(this._settings.maxVelocityX, this._settings.maxVelocityY);
             this.sprite.depth = 1;
-
-            this._cursors = this.scene.input.keyboard.createCursorKeys();
-            
-            this._state.rangedWeapons.push(new Projectiles.ThrowingAxe(this.scene, this, { key: 'tiles' }).create());
-            this._state.rangedWeapons.push(new Projectiles.StandardArrow(this.scene, this, { key: 'tiles' }).create());
-            this._state.rangedWeapons.push(new Projectiles.BlueMagicOrb(this.scene, this, { key: 'tiles' }).create());
-            this._state.rangedWeapons.push(new Projectiles.FireBall(this.scene, this, { key: 'tiles' }).create());
-
-            this._state.activeRanged = this._state.rangedWeapons[0];
-
-            this._state.meleeWeapons.push(new MeleeWeapons.ngMeleeWeapon(this, 'tiles', 5660));
-            this._state.activeMelee = this._state.meleeWeapons[0];
-
-            this.registerInputHandler();
-
-            this.scene.cameras.main.startFollow(this.sprite);
-        }
-
-        private registerInputHandler()
-        {
-            this.scene.input.keyboard.on('keydown_SPACE', (evt) => {
-                if (!this.isAlive) return;
-                this._state.activeRanged.fire();
-            });
-
-            this.scene.input.keyboard.on('keydown_SHIFT', (evt) => {
-                // put the melee weapon in front of player sprite if they're facing downward
-                this._state.activeMelee.sprite.depth = this._state.movementVector == 90 ? 2 : 0;
-                
-                if (!this.isAlive || this._state.activeMelee.visible) return;
-                this._state.activeMelee.slash();
-            });
-
-            this.scene.input.keyboard.on('keyup_SHIFT', (evt) => {
-                // clearInterval(this._weaponTimeout);
-            });
-
-            this.scene.input.keyboard.on('keyup_X', (evt) => {
-                const curIdx = this._state.rangedWeapons.indexOf(this._state.activeRanged);
-                let next = curIdx == this._state.rangedWeapons.length - 1 ? 0 : curIdx + 1;
-                this._state.activeRanged = this._state.rangedWeapons[next];
-            });
         }
 
         public update()
@@ -146,19 +100,19 @@ export namespace Players
             this.healthBar.setY(this.sprite.y - 40);
 
             const diagonal = (this._cursors.left.isDown || this._cursors.right.isDown) && (this._cursors.up.isDown || this._cursors.down.isDown);
-            const weaponVisible = this._state.activeMelee.visible;
+            const weaponVisible = this.meleeWeapon.visible;
             
             if (this._cursors.right.isDown)
             {
                 this.sprite.setAccelerationX(this.accelleration);
                 if (!diagonal) this.sprite.anims.play(`${this._settings.texture}_right`, true);
-                if (!weaponVisible) this._state.movementVector = 0;
+                if (!weaponVisible) this.movementState.vector = 0;
             }
             else if (this._cursors.left.isDown)
             {
                 this.sprite.setAccelerationX(-1 * this.accelleration);
                 if (!diagonal) this.sprite.anims.play(`${this._settings.texture}_left`, true);
-                if (!weaponVisible) this._state.movementVector = 180;
+                if (!weaponVisible) this.movementState.vector = 180;
             }
             else
             {
@@ -171,7 +125,7 @@ export namespace Players
                 if (!weaponVisible)
                 {
                     this.sprite.anims.play(`${this._settings.texture}_up`, true);
-                    this._state.movementVector = 270;
+                    this.movementState.vector = 270;
                 }
             }
             else if (this._cursors.down.isDown)
@@ -180,7 +134,7 @@ export namespace Players
                 if (!weaponVisible)
                 {
                     this.sprite.anims.play(`${this._settings.texture}_down`, true);
-                    this._state.movementVector = 90;
+                    this.movementState.vector = 90;
                 }
             }
             else
@@ -193,18 +147,16 @@ export namespace Players
                 return this._cursors[cur].isDown ? true : isDown;
             }, false);
 
-            if (!this._state.idleTimeout && this.sprite.anims.isPlaying && !movementDown) {
-                console.log("waiting");
-                this._state.idleTimeout = setTimeout(() => this.sprite.anims.stop(), this._settings.idleTimeoutMs);
+            if (!this.movementState.idleTimeout && this.sprite.anims.isPlaying && !movementDown) {
+                this.movementState.idleTimeout = setTimeout(() => this.sprite.anims.stop(), this._settings.idleTimeoutMs);
             }
-            else if (this._state.idleTimeout && movementDown)
+            else if (this.movementState.idleTimeout && movementDown)
             {
-                console.log("clearing");
-                clearTimeout(this._state.idleTimeout);
-                this._state.idleTimeout = null;
+                clearTimeout(this.movementState.idleTimeout);
+                this.movementState.idleTimeout = null;
             }
 
-            this._state.activeMelee.update();
+            this.meleeWeapon.update();
 
         }
         public kill()
@@ -224,12 +176,16 @@ export namespace Players
         }
         public projectilesOverlapWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
         {
-            this.scene.physics.add.overlap(this._state.rangedWeapons.map(elem => elem.group), object, callback);
+            this.scene.physics.add.overlap(this.weaponState.rangedWeapons.map(elem => elem.group), object, callback);
+        }
+        public projectilesCollideWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
+        {
+            this.scene.physics.add.collider(this.weaponState.rangedWeapons.map(elem => elem.group), object, callback);
         }
 
-        public addAnimations()
-        {   
-            // needed for interface
+        public registerInputHandler()
+        {
+            this._cursors = this.scene.input.keyboard.createCursorKeys();
             return;
         }
 
@@ -246,12 +202,57 @@ export namespace Players
     }
 
     export class BasePlayerCharacter extends ngPlayerCharacter implements IPlayerCharacter {
+        
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
         {
-            super(scene, x, y, texture);
+            super(scene, x, y, texture, 1000);
             this._settings.texture = texture;
-            this.spriteConfig.health = 1000;
-            // this.create();
+            // this.spriteConfig.maxHealth = this.spriteConfig.currentHealth 1000;
+        }
+
+        public registerInputHandler() {
+            super.registerInputHandler();
+
+            this.scene.input.keyboard.on('keydown_SPACE', (evt) => {
+                if (!this.isAlive || !this.rangedWeapon) return;
+                this.rangedWeapon.fire();
+            });
+
+            this.scene.input.keyboard.on('keydown_SHIFT', (evt) => {
+                if (!this.isAlive || !this.meleeWeapon) return;
+
+                // put the melee weapon in front of player sprite if they're facing downward
+                this.meleeWeapon.sprite.depth = this.movementState.vector == 90 ? 2 : 0;
+
+                // don't slash again if the weapon is still visible from the last
+                if (this.meleeWeapon.visible) return;
+
+                this.meleeWeapon.slash();
+            });
+
+            this.scene.input.keyboard.on('keyup_SHIFT', (evt) => {
+                // clearInterval(this._weaponTimeout);
+            });
+
+            this.scene.input.keyboard.on('keyup_X', (evt) => {
+                if (!this.weaponState.rangedWeapons.length) return;
+
+                const curIdx = this.weaponState.rangedWeapons.indexOf(this.rangedWeapon);
+                let next = curIdx == this.weaponState.rangedWeapons.length - 1 ? 0 : curIdx + 1;
+                this.weaponState.activeRanged = this.weaponState.rangedWeapons[next];
+            });
+        }
+
+        public addWeapons() {
+            this.weaponState.rangedWeapons.push(new Projectiles.ThrowingAxe(this.scene, this, { key: 'tiles' }).create());
+            this.weaponState.rangedWeapons.push(new Projectiles.StandardArrow(this.scene, this, { key: 'tiles' }).create());
+            this.weaponState.rangedWeapons.push(new Projectiles.BlueMagicOrb(this.scene, this, { key: 'tiles' }).create());
+            this.weaponState.rangedWeapons.push(new Projectiles.FireBall(this.scene, this, { key: 'tiles' }).create());
+
+            this.weaponState.activeRanged = this.weaponState.rangedWeapons[0];
+
+            this.weaponState.meleeWeapons.push(new MeleeWeapons.ngMeleeWeapon(this, 'tiles', 5660));
+            this.weaponState.activeMelee = this.weaponState.meleeWeapons[0];
         }
     }
 
@@ -291,7 +292,7 @@ export namespace Players
             // three frame players need to be set to down or they're facing upward to start (spritesheet configuration)
             this.sprite.anims.play(`${this._settings.texture}_down`, true);
             this.sprite.anims.stop();
-            this._state.movementVector = 90;
+            this.movementState.vector = 90;
         }
     }
 

@@ -70,7 +70,7 @@ export namespace Projectiles {
             let velocity = this._config.velocity;
             
             // TODO - angled projectiles
-            switch(this._player.movementVector)
+            switch(this._player.movementState.vector)
             {
                 case 0:
                     projectile.setVelocityX(velocity);
