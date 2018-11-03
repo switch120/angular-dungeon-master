@@ -1,10 +1,10 @@
 import { Players } from './player';
-import { ngGroup } from "./gameObjects";
+import { ngGroup, ngLivingSprite } from "./gameObjects";
 
 export namespace Projectiles {
     export class ngProjectileGroup extends ngGroup
     {
-        protected _player:Players.ngPlayerCharacter;
+        protected _owner:ngLivingSprite;
         protected _animationKey:string = "bullet";
 
         protected _config = {
@@ -22,10 +22,10 @@ export namespace Projectiles {
 
         private _animationConfig:AnimationConfig;
 
-        constructor(scene:Phaser.Scene, player:Players.ngPlayerCharacter, groupConfig?:GroupCreateConfig)
+        constructor(scene:Phaser.Scene, owner:ngLivingSprite, groupConfig?:GroupCreateConfig)
         {
             super(scene);
-            this._player = player;
+            this._owner = owner;
             this._groupConfig = groupConfig;
         }
 
@@ -51,7 +51,7 @@ export namespace Projectiles {
                 let x = Math.round(child.x);
                 let y = Math.round(child.y);
 
-                if (x > (this.scene.cameras.main.width + this._player.sprite.x) || y > (this.scene.cameras.main.height + this._player.sprite.y) ||
+                if (x > (this.scene.cameras.main.width + this._owner.sprite.x) || y > (this.scene.cameras.main.height + this._owner.sprite.y) ||
                     x < 0 || y < 0) 
                 {
                     child.setActive(false);
@@ -65,15 +65,15 @@ export namespace Projectiles {
             // rof limiter
             if (this._debounceTimeout || this._group.getTotalUsed() >= this._config.maxFired) return;
 
-            var projectile = this._group.get(this._player.sprite.body.position.x + 20, this._player.sprite.body.position.y + 20, this._groupConfig.key, this._groupConfig.frame).setActive(true).setVisible(true);
+            var projectile = this._group.get(this._owner.sprite.body.position.x + 20, this._owner.sprite.body.position.y + 20, this._groupConfig.key, this._groupConfig.frame).setActive(true).setVisible(true);
             
             let velocity = this._config.velocity;
             
             // TODO - angled projectiles
-            switch(this._player.movementState.vector)
+            switch(this._owner.movementState.vector)
             {
                 case 0:
-                    projectile.setVelocityX(velocity);
+                    projectile.setAngularVelocityX(velocity);
                     projectile.setRotation(0);
                     projectile.flipX = false;
                     projectile.setSize(this._config.fixedSize.x, this._config.fixedSize.y);

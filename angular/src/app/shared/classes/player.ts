@@ -14,46 +14,14 @@ export namespace Players
         respawn(map:ngMap)
     }
 
-    export interface IPlayerState {
-        movementVector:number,
-        meleeWeapons:MeleeWeapons.ngMeleeWeapon[],
-        activeMelee?:MeleeWeapons.ngMeleeWeapon,
-        rangedWeapons:Projectiles.ngProjectileGroup[],
-        activeRanged?:Projectiles.ngProjectileGroup,
-        idleTimeout?:any,
-    }
-
-    export interface IPlayerSettings {
-        texture?:string,
-        drag:number,
-        bounce:number,
-        turboCoefficient:number,
-        maxVelocityX:number,
-        maxVelocityY:number,                
-        accelerationX:number,
-        accelerationY:number,
-        idleTimeoutMs?:number
-    }
-
     export class ngPlayerCharacter extends ngLivingSprite implements IPlayerCharacter
     {
-        protected _settings:IPlayerSettings = {
-            drag: 900,
-            bounce: 0.3,
-            turboCoefficient: 1.5,
-            maxVelocityX: 250,
-            maxVelocityY: 250,
-            accelerationX: 2000,
-            accelerationY: 2000,
-            idleTimeoutMs: 325
-        }
-
         private _cursors:Phaser.Input.Keyboard.CursorKeys;
 
         public get accelleration():number {
             // todo: support vertical movement
-            let accel = this._settings.accelerationX;
-            return this._cursors.shift.isDown ? this._settings.accelerationX * this._settings.turboCoefficient : accel;
+            let accel = this.movementSettings.accelerationX;
+            return this._cursors.shift.isDown ? this.movementSettings.accelerationX * this.movementSettings.turboCoefficient : accel;
         }
 
         public get cursorKeys():Phaser.Input.Keyboard.CursorKeys {
@@ -80,13 +48,13 @@ export namespace Players
                 idleTimeoutMs: 325
             };
 
-            this.sprite.setBounce(this._settings.bounce);
+            this.sprite.setBounce(this.movementSettings.bounce);
             this.sprite.setCollideWorldBounds(true);
             this.sprite.body.allowGravity = false;
-            this.sprite.setDrag(this._settings.drag, this._settings.drag);
+            this.sprite.setDrag(this.movementSettings.drag, this.movementSettings.drag);
             this.sprite.setAcceleration(0, 0);
             this.sprite.setVelocity(0, 0);
-            this.sprite.setMaxVelocity(this._settings.maxVelocityX, this._settings.maxVelocityY);
+            this.sprite.setMaxVelocity(this.movementSettings.maxVelocityX, this.movementSettings.maxVelocityY);
             this.sprite.depth = 1;
         }
 
@@ -104,13 +72,13 @@ export namespace Players
             if (this._cursors.right.isDown)
             {
                 this.sprite.setAccelerationX(this.accelleration);
-                if (!diagonal) this.sprite.anims.play(`${this._settings.texture}_right`, true);
+                if (!diagonal) this.sprite.anims.play(`${this.spriteConfig.texture}_right`, true);
                 if (!weaponVisible) this.movementState.vector = 0;
             }
             else if (this._cursors.left.isDown)
             {
                 this.sprite.setAccelerationX(-1 * this.accelleration);
-                if (!diagonal) this.sprite.anims.play(`${this._settings.texture}_left`, true);
+                if (!diagonal) this.sprite.anims.play(`${this.spriteConfig.texture}_left`, true);
                 if (!weaponVisible) this.movementState.vector = 180;
             }
             else
@@ -123,7 +91,7 @@ export namespace Players
                 this.sprite.setAccelerationY(-1 * this.accelleration);
                 if (!weaponVisible)
                 {
-                    this.sprite.anims.play(`${this._settings.texture}_up`, true);
+                    this.sprite.anims.play(`${this.spriteConfig.texture}_up`, true);
                     this.movementState.vector = 270;
                 }
             }
@@ -132,7 +100,7 @@ export namespace Players
                 this.sprite.setAccelerationY(this.accelleration);
                 if (!weaponVisible)
                 {
-                    this.sprite.anims.play(`${this._settings.texture}_down`, true);
+                    this.sprite.anims.play(`${this.spriteConfig.texture}_down`, true);
                     this.movementState.vector = 90;
                 }
             }
@@ -147,7 +115,7 @@ export namespace Players
             }, false);
 
             if (!this.movementState.idleTimeout && this.sprite.anims.isPlaying && !movementDown) {
-                this.movementState.idleTimeout = setTimeout(() => this.sprite.anims.stop(), this._settings.idleTimeoutMs);
+                this.movementState.idleTimeout = setTimeout(() => this.sprite.anims.stop(), this.movementSettings.idleTimeoutMs);
             }
             else if (this.movementState.idleTimeout && movementDown)
             {
@@ -173,14 +141,6 @@ export namespace Players
             this.sprite.setX(x);
             this.sprite.setY(y);
         }
-        public projectilesOverlapWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
-        {
-            this.scene.physics.add.overlap(this.weaponState.rangedWeapons.map(elem => elem.group), object, callback);
-        }
-        public projectilesCollideWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
-        {
-            this.scene.physics.add.collider(this.weaponState.rangedWeapons.map(elem => elem.group), object, callback);
-        }
 
         public registerInputHandler()
         {
@@ -205,7 +165,7 @@ export namespace Players
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
         {
             super(scene, x, y, texture, 1000);
-            this._settings.texture = texture;
+            this.spriteConfig.texture = texture;
         }
 
         public registerInputHandler() {
@@ -257,38 +217,38 @@ export namespace Players
     export class ThreeFramePlayer extends BasePlayerCharacter implements IPlayerCharacter {
         public addAnimations()
         {
-            if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
+            if (this.scene.anims.get(`${this.spriteConfig.texture}_right`)) return;
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_left`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 9, end: 11 }),
+                key: `${this.spriteConfig.texture}_left`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 9, end: 11 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_right`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 3, end: 5 }),
+                key: `${this.spriteConfig.texture}_right`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 3, end: 5 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_up`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 0, end: 2 }),
+                key: `${this.spriteConfig.texture}_up`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 0, end: 2 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_down`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 6, end: 8 }),
+                key: `${this.spriteConfig.texture}_down`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 6, end: 8 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             // three frame players need to be set to down or they're facing upward to start (spritesheet configuration)
-            this.sprite.anims.play(`${this._settings.texture}_down`, true);
+            this.sprite.anims.play(`${this.spriteConfig.texture}_down`, true);
             this.sprite.anims.stop();
             this.movementState.vector = 90;
         }
@@ -297,32 +257,32 @@ export namespace Players
     export class FourFramePlayer extends BasePlayerCharacter implements IPlayerCharacter {
         public addAnimations()
         {
-            if (this.scene.anims.get(`${this._settings.texture}_right`)) return;
+            if (this.scene.anims.get(`${this.spriteConfig.texture}_right`)) return;
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_left`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 4, end: 7 }),
+                key: `${this.spriteConfig.texture}_left`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 4, end: 7 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_right`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 8, end: 11 }),
+                key: `${this.spriteConfig.texture}_right`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 8, end: 11 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_up`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 12, end: 15 }),
+                key: `${this.spriteConfig.texture}_up`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 12, end: 15 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this._settings.texture}_down`,
-                frames: this.scene.anims.generateFrameNumbers(this._settings.texture, { start: 0, end: 3 }),
+                key: `${this.spriteConfig.texture}_down`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 0, end: 3 }),
                 frameRate: 10,
                 repeat: 2
             });

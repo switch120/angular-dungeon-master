@@ -1,6 +1,7 @@
 import { BombGroup } from './bombs';
 import { IMapConfig, ngMap } from './map';
 import { Players } from './player';
+import { Npcs } from './npcs';
 
 export namespace Scenes {
     export interface IScene {
@@ -124,6 +125,9 @@ export namespace Scenes {
                     });
                 }
             });
+
+            let eye = new Npcs.eyeballSentinel(this, this.player.sprite.x, this.player.sprite.y);
+            eye.create();
 
             this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
 

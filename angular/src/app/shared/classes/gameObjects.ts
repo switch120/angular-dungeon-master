@@ -191,6 +191,15 @@ export class ngLivingSprite extends ngArcadeSprite implements IHasHealth, IHasWe
         return;
     }
 
+    public projectilesOverlapWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
+    {
+        this.scene.physics.add.overlap(this.weaponState.rangedWeapons.map(elem => elem.group), object, callback);
+    }
+
+    public projectilesCollideWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(projectile:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
+    {
+        this.scene.physics.add.collider(this.weaponState.rangedWeapons.map(elem => elem.group), object, callback);
+    }
 }
 
 export class ngGroup extends ngGameObject {
