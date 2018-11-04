@@ -52,8 +52,7 @@ export namespace Projectiles {
                 let y = Math.round(child.y);
 
                 if (x > (this.scene.cameras.main.width + this._owner.sprite.x) || y > (this.scene.cameras.main.height + this._owner.sprite.y) ||
-                    x < 0 || y < 0) 
-                {
+                    x < 0 || y < 0) {
                     child.setActive(false);
                     child.setRotation(0);
                     child.flipX = false;
@@ -68,12 +67,21 @@ export namespace Projectiles {
             var projectile = this._group.get(this._owner.sprite.body.position.x + 20, this._owner.sprite.body.position.y + 20, this._groupConfig.key, this._groupConfig.frame).setActive(true).setVisible(true);
             
             let velocity = this._config.velocity;
+            const {x: vX, y: vY} = this._owner.sprite.body.velocity;
+
+            // angle vector for projectiles
+            if (vX < 0 && vY < 0 || vX < 0 && vY > 0) {
+                projectile.setVelocityX(-velocity);
+            }
+            else if (vX > 0 && vY < 0 || vX > 0 && vY > 0) {
+                projectile.setVelocityX(velocity);
+            }
             
             // TODO - angled projectiles
             switch(this._owner.movementState.vector)
             {
                 case 0:
-                    projectile.setAngularVelocityX(velocity);
+                    projectile.setVelocityX(velocity);
                     projectile.setRotation(0);
                     projectile.flipX = false;
                     projectile.setSize(this._config.fixedSize.x, this._config.fixedSize.y);
@@ -83,18 +91,28 @@ export namespace Projectiles {
                     projectile.setRotation(1.5);
                     projectile.flipX = false;
                     projectile.setSize(this._config.fixedSize.y, this._config.fixedSize.x);
+
+                    // rotate projectile if vector is an angle
+                    if (projectile.body.velocity.x < 0) projectile.setRotation(2);
+                    if (projectile.body.velocity.x > 0) projectile.setRotation(1);
+
                     break;
                 case 180:
                     projectile.setVelocityX(-1 * velocity);
                     projectile.setRotation(0);
                     projectile.flipX = true;
                     projectile.setSize(this._config.fixedSize.x, this._config.fixedSize.y);
-                    break;
+                    break;                    
                 case 270:
                     projectile.setVelocityY(-1 * velocity);
                     projectile.setRotation(-1.5);
                     projectile.flipX = false;
                     projectile.setSize(this._config.fixedSize.y, this._config.fixedSize.x);
+
+                    // rotate projectile if vector is an angle
+                    if (projectile.body.velocity.x < 0) projectile.setRotation(-2);
+                    if (projectile.body.velocity.x > 0) projectile.setRotation(-1);
+
                     break;
             }
             

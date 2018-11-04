@@ -89,6 +89,12 @@ export namespace Players
             if (this._cursors.up.isDown)
             {
                 this.sprite.setAccelerationY(-1 * this.accelleration);
+
+                // lean left or right when moving upward diagonally
+                if (this._cursors.right.isDown) this.sprite.setAngle(10);
+                else if (this._cursors.left.isDown) this.sprite.setAngle(-10);
+                else this.sprite.setAngle(0);
+
                 if (!weaponVisible)
                 {
                     this.sprite.anims.play(`${this.spriteConfig.texture}_up`, true);
@@ -98,6 +104,12 @@ export namespace Players
             else if (this._cursors.down.isDown)
             {
                 this.sprite.setAccelerationY(this.accelleration);
+
+                // less angle when looking down diagonally
+                if (this._cursors.right.isDown) this.sprite.setAngle(-5);
+                else if (this._cursors.left.isDown) this.sprite.setAngle(5);
+                else this.sprite.setAngle(0);
+                
                 if (!weaponVisible)
                 {
                     this.sprite.anims.play(`${this.spriteConfig.texture}_down`, true);
@@ -107,6 +119,7 @@ export namespace Players
             else
             {
                 this.sprite.setAccelerationY(0);
+                this.sprite.setAngle(0);
             }
 
             // are any movement controls down?
@@ -180,7 +193,7 @@ export namespace Players
                 if (!this.isAlive || !this.meleeWeapon) return;
 
                 // put the melee weapon in front of player sprite if they're facing downward
-                this.meleeWeapon.sprite.depth = this.movementState.vector == 90 ? 2 : 0;
+                this.meleeWeapon.sprite.depth = this.movementState.vector > 0 ? 2 : 0;
 
                 // don't slash again if the weapon is still visible from the last
                 if (this.meleeWeapon.visible) return;
