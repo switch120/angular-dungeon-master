@@ -4,6 +4,7 @@ import { Projectiles } from './projectiles';
 
 export namespace Npcs {
     export interface INpc {
+        tilemapProperties?:any
         addAnimations()
         addWeapons()
         update()
@@ -14,9 +15,12 @@ export namespace Npcs {
 
     export class ngNpc extends ngLivingSprite implements INpc
     {
-        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture?:string, frame?:number, maxHealth?:number)
+        public tilemapProperties?:any;
+
+        constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture?:string, frame?:number, maxHealth?:number, tilemapProperties?:any)
         {
             super(scene, x, y, texture, frame, maxHealth);
+            this.tilemapProperties = tilemapProperties;
         }
 
         public create(x?:number, y?:number)
@@ -77,9 +81,9 @@ export namespace Npcs {
 
         public firingIntervalMs: number = 800;
 
-        constructor(scene:Phaser.Scene, x?:number, y?:number)
+        constructor(scene:Phaser.Scene, x?:number, y?:number, properties?:any)
         {
-            super(scene, x, y, 'tiles', 4564, 100);
+            super(scene, x, y, 'tiles', 4564, 100, properties);
 
             this._movementSettings = {
                 drag: 900,
@@ -92,9 +96,10 @@ export namespace Npcs {
                 idleTimeoutMs: 325
             };
 
-            this._firingAngle = 0;
-            this._maxFiringAngle = 90
-            this._minFiringAngle = -90
+            this._maxFiringAngle = this.tilemapProperties && this.tilemapProperties.maxAngle ? this.tilemapProperties.maxAngle : 90;
+            this._minFiringAngle = this.tilemapProperties && this.tilemapProperties.minAngle ? this.tilemapProperties.minAngle : -90;
+
+            this._firingAngle = this._minFiringAngle;
         }
 
         public create(x?:number, y?:number)
@@ -107,12 +112,14 @@ export namespace Npcs {
             setInterval(() => {
                 this.rangedWeapon.fire(this._firingAngle);
                 this.update();
+                
+                if (this._maxFiringAngle == this._minFiringAngle) return;
 
                 // increment/decrement
                 this._firingAngle += this._intervalAngleOffset * this._direction;
 
                 if (this._firingAngle >= this._maxFiringAngle) this._direction = -1;
-                if (this._firingAngle <= this._minFiringAngle) this._direction = 1;
+                else if (this._firingAngle <= this._minFiringAngle) this._direction = 1;
 
             }, this.firingIntervalMs);
         }

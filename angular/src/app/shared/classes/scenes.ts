@@ -12,17 +12,26 @@ export namespace Scenes {
 
         protected map:ngMap;
 
-        init(data:any) {
-            this.sceneData = data;    
+        public init(data:any) {
+            this.sceneData = data;
         }
 
-        preload() {
+        public preload() {
             if (this.mapConfig)
             {
                 this.map = new ngMap(this, this.mapConfig);
                 this.map.loadAssets();
             } 
             Players.ngPlayerCharacter.loadAssets(this);
+        }
+
+        public initNpcs()
+        {
+            this.map.map.objects[0].objects.forEach( (obj:any) => {
+                console.log(obj);
+                let npc:Npcs.ngNpc = new (Npcs)[obj.name](this, obj.x, obj.y, obj.properties);
+                npc.create();
+            });
         }
     }
     export class PlayerSelect extends ngScene {
@@ -87,7 +96,6 @@ export namespace Scenes {
             super.preload();
             
             BombGroup.loadAssets(this);
-            // ngStars.loadAssets(this);
         }
     
         create ()
@@ -126,8 +134,8 @@ export namespace Scenes {
                 }
             });
 
-            let eye = new Npcs.eyeballSentinel(this, this.player.sprite.x, this.player.sprite.y);
-            eye.create();
+            // let eye = new Npcs.eyeballSentinel(this, this.player.sprite.x, this.player.sprite.y);
+            // eye.create();
 
             this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
 
@@ -167,6 +175,8 @@ export namespace Scenes {
 
             // projectiles collide w/ bombs
             this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
+
+            super.initNpcs();
             
             // projectiles collide with pathlayer
             // this.player.projectilesCollideWith([this.map.pathLayer], (projectile, platform) => { 

@@ -194,9 +194,12 @@ export class ngMap
         // TODO - abstract away
         this._scene.load.image("spike", "assets/0x72-industrial-spike.png");
     }
-    getSpawnPoint(index:number = -1) : Phaser.GameObjects.GameObject {
+    getSpawnPoint(index:number = -1) : Phaser.GameObjects.GameObject | any {
         
-        const pts = this.map.objects[0].objects.filter(obj => obj.name == "Spawn Point");
+        const objects = this.map.objects.find(layer => layer.name == "Objects");
+        if (!objects) return { x: 0, y: 0 };
+
+        const pts = objects.objects.filter(obj => obj.name == "Spawn Point");
         
         if (index == -1)
         {

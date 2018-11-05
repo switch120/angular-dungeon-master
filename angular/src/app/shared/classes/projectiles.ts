@@ -75,14 +75,16 @@ export namespace Projectiles {
             // translate reverse direction vectors
             if (vector < 0) vector = 360 + vector;
 
+            console.log(vector);
+
             // angle vector for projectiles (but only when moving or when overridden)
             if (vX < 0 && vY < 0 || vX < 0 && vY > 0 || vector == 225 || vector == 135) {
                 projectile.setVelocityX(-velocity);
-                vector = 270;
+                vector = vector == 135 ? 90 : 270;
             }
             else if (vX > 0 && vY < 0 || vX > 0 && vY > 0 || vector == 45 || vector == 315) {
                 projectile.setVelocityX(velocity);
-                vector = 90;
+                vector = vector == 315 ? 270 : 90;
             }
             
             switch(vector)
