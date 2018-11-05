@@ -45,8 +45,11 @@ export namespace Projectiles {
             this.scene.anims.create(config);
         }
 
-        public fire()
+        public fire(vector?:number)
         {
+            // allow vector override (shoot in direction not facing)
+            vector = vector || this._owner.movementState.vector;
+
             this._group.children.getArray().forEach( (child:Phaser.Physics.Arcade.Sprite, index) => {
                 let x = Math.round(child.x);
                 let y = Math.round(child.y);
@@ -65,20 +68,24 @@ export namespace Projectiles {
             if (this._debounceTimeout || this._group.getTotalUsed() >= this._config.maxFired) return;
 
             var projectile = this._group.get(this._owner.sprite.body.position.x + 20, this._owner.sprite.body.position.y + 20, this._groupConfig.key, this._groupConfig.frame).setActive(true).setVisible(true);
-            
+
             let velocity = this._config.velocity;
             const {x: vX, y: vY} = this._owner.sprite.body.velocity;
 
-            // angle vector for projectiles
-            if (vX < 0 && vY < 0 || vX < 0 && vY > 0) {
+            // translate reverse direction vectors
+            if (vector < 0) vector = 360 + vector;
+
+            // angle vector for projectiles (but only when moving or when overridden)
+            if (vX < 0 && vY < 0 || vX < 0 && vY > 0 || vector == 225 || vector == 135) {
                 projectile.setVelocityX(-velocity);
+                vector = 270;
             }
-            else if (vX > 0 && vY < 0 || vX > 0 && vY > 0) {
+            else if (vX > 0 && vY < 0 || vX > 0 && vY > 0 || vector == 45 || vector == 315) {
                 projectile.setVelocityX(velocity);
+                vector = 90;
             }
             
-            // TODO - angled projectiles
-            switch(this._owner.movementState.vector)
+            switch(vector)
             {
                 case 0:
                     projectile.setVelocityX(velocity);

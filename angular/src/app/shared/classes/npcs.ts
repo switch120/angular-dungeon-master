@@ -69,6 +69,14 @@ export namespace Npcs {
     }
     export class eyeballSentinel extends ngNpc {
 
+        private _direction: number = 1;
+        private _intervalAngleOffset: number = 45;
+        private _firingAngle: number;
+        private _maxFiringAngle: number;
+        private _minFiringAngle: number;
+
+        public firingIntervalMs: number = 800;
+
         constructor(scene:Phaser.Scene, x?:number, y?:number)
         {
             super(scene, x, y, 'tiles', 4564, 100);
@@ -83,6 +91,10 @@ export namespace Npcs {
                 accelerationY: 2000,
                 idleTimeoutMs: 325
             };
+
+            this._firingAngle = 0;
+            this._maxFiringAngle = 90
+            this._minFiringAngle = -90
         }
 
         public create(x?:number, y?:number)
@@ -93,9 +105,16 @@ export namespace Npcs {
             this.movementState.vector = 0;
 
             setInterval(() => {
-                this.rangedWeapon.fire();
+                this.rangedWeapon.fire(this._firingAngle);
                 this.update();
-            }, 800);
+
+                // increment/decrement
+                this._firingAngle += this._intervalAngleOffset * this._direction;
+
+                if (this._firingAngle >= this._maxFiringAngle) this._direction = -1;
+                if (this._firingAngle <= this._minFiringAngle) this._direction = 1;
+
+            }, this.firingIntervalMs);
         }
         public addWeapons() {
             this.weaponState.rangedWeapons.push(new Projectiles.FireBall(this.scene, this, { key: 'tiles' }).create());
