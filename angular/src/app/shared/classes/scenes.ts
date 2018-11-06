@@ -5,12 +5,28 @@ import { Npcs } from './npcs';
 
 export namespace Scenes {
     export interface IScene {
+        gameOver:boolean
+        npcs:Npcs.ngNpc[]
+        init(data:any)
+        preload()
+        initNpcs(player:Players.BasePlayerCharacter)
+        update()
     }
-    export abstract class ngScene extends Phaser.Scene implements IScene{
+    export abstract class ngScene extends Phaser.Scene implements IScene {
         protected mapConfig:IMapConfig = null;
         protected sceneData:any;
-
         protected map:ngMap;
+        protected _gameOver:boolean = false;
+
+        private _npcs:Npcs.ngNpc[] = [];
+
+        public get npcs():Npcs.ngNpc[] {
+            return this._npcs;
+        }
+
+        public get gameOver():boolean {
+            return this._gameOver;
+        }
 
         public init(data:any) {
             this.sceneData = data;
@@ -28,7 +44,6 @@ export namespace Scenes {
         public initNpcs(player:Players.BasePlayerCharacter)
         {
             this.map.map.objects[0].objects.forEach( (obj:any) => {
-                console.log(obj);
                 let npc:Npcs.ngNpc = new (Npcs)[obj.name](this, obj.x, obj.y, obj.properties);
                 npc.create();
 
@@ -48,8 +63,27 @@ export namespace Scenes {
                     npc.hit(player.rangedWeapon.impactConfig);
                     
                     // todo: support durability as a diminishing value
-                    if (!player.rangedWeapon.impactConfig) projectile.destroy();
+                    if (!player.rangedWeapon.impactConfig.durability) projectile.destroy();
                 });
+
+                // npc collide w/ pathLayer
+                npc.collideWith(this.map.pathLayer);
+
+                // npc collide w/ player if impactConfig exists
+                if (npc.impactConfig) {
+                    npc.collideWith(player.sprite, (n, p) => {
+                        player.hit(npc.impactConfig);
+                    });
+                }
+
+                this._npcs.push(npc);
+            });
+        }
+        public update() {
+            this.map.update();
+
+            this.npcs.forEach(npc => {
+                npc.update();
             });
         }
     }
@@ -67,11 +101,6 @@ export namespace Scenes {
                 spritesheetPath: 'assets/tilemaps/dungeon_1.png'
             }
         }
-
-        preload() {
-            super.preload();
-        }
-
         create() {
             // load the map 
             this.map.create();
@@ -204,27 +233,25 @@ export namespace Scenes {
         }
         update()
         {
-            // if (this.gameData.over) 
-            if (0) 
+            super.update();
+
+            if (!this.player.isAlive && !this.gameOver) 
             {
                 const cam = this.cameras.main;
                 cam.shake(100, 0.05);
                 cam.fade(250, 0, 0, 0);
 
-                // Freeze the player to leave them on screen while fading but remove the marker immediately
-                // this.player.sprite.fr.freeze();
-                // this.marker.destroy();
+                this._gameOver = true;
 
                 cam.once("camerafadeoutcomplete", () => {
-                    // scene.scene.restart();
-                    // this.player.sprite.destroy();
                     this.player.respawn(this.map);
-                    // this.gameData.over = false;
                     cam.fadeIn();
+
+                    this._gameOver = false;
+
+                    this.scene.restart();
                 });
             };
-
-            this.map.update();
 
             this.player.update();
             this.bombs.update();

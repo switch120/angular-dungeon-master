@@ -1,6 +1,6 @@
+import { IImpactConfig } from './../interfaces/generic';
 import { Players } from './player';
 import { ngGroup, ngLivingSprite } from "./gameObjects";
-import { IImpactConfig } from '../interfaces/projectiles';
 
 export namespace Projectiles {
     export abstract class ngProjectileGroup extends ngGroup
@@ -26,7 +26,7 @@ export namespace Projectiles {
             staggerVector: null
         }
 
-        private _debounceTimeout:any;
+        private _debounceTimeout:any; 
 
         private _animationConfig:AnimationConfig;
 
@@ -92,7 +92,6 @@ export namespace Projectiles {
             else if (vX < 0 && vY) {
                 projectile.setVelocityX(-velocity);
                 vector = vY > 0 ? 90 : 270;
-                if (vX || vY) console.log(vector);
             }
             else if (vector == 45 || vector == 315)
             {
@@ -102,7 +101,6 @@ export namespace Projectiles {
             else if (vX > 0 && vY) {
                 projectile.setVelocityX(velocity);
                 vector = vY > 0 ? 90 : 270;
-                if (vX || vY) console.log(vector);
             }
             
             switch(vector)

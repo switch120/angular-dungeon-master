@@ -1,4 +1,3 @@
-import { IImpactConfig } from './projectiles';
 import { MeleeWeapons } from "../classes/meleeWeapons";
 import { Projectiles } from "../classes/projectiles";
 
@@ -20,6 +19,13 @@ export interface IHasWeapons {
     rangedWeapon: Projectiles.ngProjectileGroup;
     addWeapons()
 }
+export interface IImpactConfig {
+    hitPoints:number;
+    durability?:number;
+    staggerVelocity?:number;
+    staggerVector?:number;
+    staggerDuration?:number;
+}
 export interface IHasMovement {
     movementSettings: IMovementSettings
     movementState: IMovementState
@@ -37,12 +43,16 @@ export interface IMovementState {
     idleTimeout?: number | any;
 }
 export interface IMovementSettings {
-    drag: number,
-    bounce: number
-    turboCoefficient: number
+    drag?: number,
+    bounce?: number
+    turboCoefficient?: number
     maxVelocityX: number
     maxVelocityY: number
     accelerationX: number
     accelerationY: number
-    idleTimeoutMs: number
+    idleTimeoutMs?: number
+}
+export interface IHasAnimations {
+    animationsComplete?:(animation, frame) => {}
+    addAnimations()
 }

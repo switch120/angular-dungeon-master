@@ -1,12 +1,11 @@
-import { IImpactConfig } from '../interfaces/projectiles';
-import { IHasHealth, IHealConfig, IHasWeapons, IWeaponState, IMovementState, IHasMovement, IMovementSettings } from "../interfaces/generic";
+import { IHasHealth, IHealConfig, IHasWeapons, IWeaponState, IMovementState, IHasMovement, IMovementSettings, IImpactConfig } from "../interfaces/generic";
 import { MeleeWeapons } from './meleeWeapons';
 import { Projectiles } from './projectiles';
 
 export interface IGameObject {
     create();
 }
-export class ngGameObject implements IGameObject {
+export abstract class ngGameObject implements IGameObject {
     protected _scene: Phaser.Scene;
 
     public get scene(): Phaser.Scene {
@@ -21,7 +20,7 @@ export class ngGameObject implements IGameObject {
 
     }
 }
-export class ngArcadeSprite extends ngGameObject {
+export abstract class ngArcadeSprite extends ngGameObject {
     public spriteConfig = {
         x: 0,
         y: 0,
@@ -30,6 +29,10 @@ export class ngArcadeSprite extends ngGameObject {
     };
 
     protected _sprite: Phaser.Physics.Arcade.Sprite;
+
+    public get spriteId():string {
+        return this.spriteConfig.texture && this.spriteConfig.frame ? `${this.spriteConfig.texture}_${this.spriteConfig.frame.toString()}` : this.spriteConfig.texture;
+    }
 
     public get sprite(): Phaser.Physics.Arcade.Sprite {
         return this._sprite;
@@ -72,7 +75,7 @@ export class ngArcadeSprite extends ngGameObject {
         this.scene.physics.add.overlap(this._sprite, object, callback);
     }
 }
-export class ngLivingSprite extends ngArcadeSprite implements IHasHealth, IHasWeapons, IHasMovement {
+export abstract class ngLivingSprite extends ngArcadeSprite implements IHasHealth, IHasWeapons, IHasMovement {
     private _currentHealth?: number;
     private _maxHealth?: number;
 
@@ -143,6 +146,12 @@ export class ngLivingSprite extends ngArcadeSprite implements IHasHealth, IHasWe
         this._currentHealth -= impactConfig.hitPoints;
         if (this._currentHealth <= 0) this.kill();
         this.redrawHealthbar();
+    }
+
+    public kill() {
+        super.kill();
+        // stop when killed
+        this.sprite.setVelocity(0, 0);
     }
 
     public heal(healConfig: IHealConfig) {

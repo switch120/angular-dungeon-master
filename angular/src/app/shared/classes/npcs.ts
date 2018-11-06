@@ -1,21 +1,31 @@
 import { ngLivingSprite } from './gameObjects';
 import { ngMap } from './map';
 import { Projectiles } from './projectiles';
+import { IImpactConfig, IHasAnimations } from '../interfaces/generic';
 
 export namespace Npcs {
     export interface INpc {
         tilemapProperties?:any
-        addAnimations()
-        addWeapons()
+        impactConfig:IImpactConfig
         update()
-        hit(IImpactConfig)
-        kill()
         respawn(map:ngMap)
     }   
 
-    export abstract class ngNpc extends ngLivingSprite implements INpc
+    export abstract class ngNpc extends ngLivingSprite implements INpc, IHasAnimations
     {
         public tilemapProperties?:any;
+
+        // impact config is optional for npcs
+        protected _impactConfig?:IImpactConfig;
+
+        public get impactConfig():IImpactConfig {
+            return this._impactConfig;
+        }
+
+        public set animationsComplete(callback) {
+            console.log(callback);
+            this.sprite.on("animationcomplete", callback, this);
+        }
 
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture?:string, frame?:number, maxHealth?:number, tilemapProperties?:any)
         {
@@ -27,14 +37,17 @@ export namespace Npcs {
         {
             super.create(x, y);
 
-            this.sprite.setBounce(this._movementSettings.bounce);
             this.sprite.setCollideWorldBounds(true);
             this.sprite.body.allowGravity = false;
-            this.sprite.setDrag(this._movementSettings.drag, this._movementSettings.drag);
-            this.sprite.setAcceleration(0, 0);
-            this.sprite.setVelocity(0, 0);
-            this.sprite.setMaxVelocity(this._movementSettings.maxVelocityX, this._movementSettings.maxVelocityY);
             this.sprite.depth = 1;
+            
+            if (this.movementSettings) {
+                this.sprite.setBounce(this._movementSettings.bounce || 0);
+                this.sprite.setDrag(this._movementSettings.drag || 0, this._movementSettings.drag || 0);
+                this.sprite.setMaxVelocity(this._movementSettings.maxVelocityX || 0, this._movementSettings.maxVelocityY || 0);
+                this.sprite.setAcceleration(this.movementSettings.accelerationX || 0, this.movementSettings.accelerationY || 0);
+                this.sprite.setMaxVelocity(this.movementSettings.maxVelocityX || 0, this.movementSettings.maxVelocityY || 0);
+            }
         }
 
         public update()
@@ -50,14 +63,7 @@ export namespace Npcs {
 
             if (this.weaponState.activeMelee) this.weaponState.activeMelee.update();
         }
-        public kill()
-        {
-            if (!this.isAlive) this.kill();
 
-            // this.sprite.setTint(0xff0000);
-            // this.sprite.setAcceleration(0,0).setVelocity(0,0);
-            // this.sprite.visible = false;
-        }
         public respawn(map:ngMap) {
             this.sprite.clearTint();
             this.sprite.visible = true;
@@ -86,17 +92,6 @@ export namespace Npcs {
         constructor(scene:Phaser.Scene, x?:number, y?:number, properties?:any)
         {
             super(scene, x, y, 'tiles', 4564, 100, properties);
-
-            this._movementSettings = {
-                drag: 900,
-                bounce: 0.3,
-                turboCoefficient: 1.5,
-                maxVelocityX: 250,
-                maxVelocityY: 250,
-                accelerationX: 2000,
-                accelerationY: 2000,
-                idleTimeoutMs: 325
-            };
 
             this._maxFiringAngle = this.tilemapProperties && this.tilemapProperties.maxAngle ? this.tilemapProperties.maxAngle : 90;
             this._minFiringAngle = this.tilemapProperties && this.tilemapProperties.minAngle ? this.tilemapProperties.minAngle : -90;
@@ -133,10 +128,10 @@ export namespace Npcs {
         }
         public addAnimations()
         {
-            if (this.scene.anims.get(`${this.spriteConfig.texture}_kill`)) return;
+            if (this.scene.anims.get(`${this.spriteId}_kill`)) return;
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_kill`,
+                key: `${this.spriteId}_kill`,
                 frames: this.scene.anims.generateFrameNumbers('tiles', { start: 1615, end: 1618 }),
                 frameRate: 10,
                 repeat: 3,
@@ -145,9 +140,56 @@ export namespace Npcs {
         }
         public kill()
         {
-            this.sprite.anims.play(`${this.spriteConfig.texture}_kill`, true);
+            this.sprite.anims.play(`${this.spriteId}_kill`, true);
             super.kill();
             clearInterval(this._interval);
+        }
+    }
+    export class darkWraith extends ngNpc {
+        constructor(scene:Phaser.Scene, x?:number, y?:number, properties?:any)
+        {
+            super(scene, x, y, 'tiles', 6033, 10, properties);
+
+            this._movementSettings = {
+                bounce: 1,
+                maxVelocityX: 250,
+                maxVelocityY: 250,
+                accelerationX: 50,
+                accelerationY: 30,
+            };
+
+            // todo: stagger
+            this._impactConfig = {
+                hitPoints: 100
+            }
+        }
+
+        public create(x?:number, y?:number)
+        {
+            super.create(x, y);
+            this.addAnimations();            
+        }
+        public addAnimations()
+        {
+            console.log(this.spriteId);
+            if (this.scene.anims.get(`${this.spriteId}_kill`)) return;
+
+            this.scene.anims.create({
+                key: `${this.spriteId}_kill`,
+                frames: this.scene.anims.generateFrameNumbers('tiles', { start: 1615, end: 1618 }),
+                frameRate: 10,
+                repeat: 3,
+                hideOnComplete: true
+            });
+
+            this.animationsComplete = (animation, frame) => {
+                console.log(animation);
+            };
+        }
+        public kill()
+        {
+            this.sprite.anims.play(`${this.spriteId}_kill`, true);
+            super.kill();
         }
     }
 }

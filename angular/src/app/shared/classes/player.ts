@@ -141,11 +141,10 @@ export namespace Players
         }
         public kill()
         {
-            return;
-            // super.kill();
+            super.kill();
             
-            // this.sprite.setTint(0xff0000);
-            // this.sprite.setAcceleration(0,0).setVelocity(0,0);
+            this.sprite.setTint(0xff0000);
+            this.sprite.setAcceleration(0,0).setVelocity(0,0);
             // this.sprite.visible = false;
         }
         public respawn(map:ngMap) {

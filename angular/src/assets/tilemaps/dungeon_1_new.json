@@ -60,8 +60,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":1203.34110344201,
-                 "y":945.416205612569
+                 "x":1203.34,
+                 "y":945.416
                 }, 
                 {
                  "height":0,
@@ -82,8 +82,20 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":1548.45154845155,
-                 "y":573.063300336028
+                 "x":1548.45,
+                 "y":573.063
+                }, 
+                {
+                 "height":0,
+                 "id":6,
+                 "name":"darkWraith",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1005.35827808555,
+                 "y":1107.07474343838
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -113,7 +125,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":6,
+ "nextobjectid":7,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.1.6",
