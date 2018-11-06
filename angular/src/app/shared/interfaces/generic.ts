@@ -1,3 +1,4 @@
+import { IImpactConfig } from './projectiles';
 import { MeleeWeapons } from "../classes/meleeWeapons";
 import { Projectiles } from "../classes/projectiles";
 
@@ -26,8 +27,10 @@ export interface IHasMovement {
 export interface IWeaponState {
     meleeWeapons: MeleeWeapons.ngMeleeWeapon[],
     activeMelee?: MeleeWeapons.ngMeleeWeapon,
+    activeMeleeHitConfig?: IImpactConfig,
     rangedWeapons: Projectiles.ngProjectileGroup[],
     activeRanged?: Projectiles.ngProjectileGroup,
+    activeRangedHitConfig?: IImpactConfig,
 }
 export interface IMovementState {
     vector?: number;

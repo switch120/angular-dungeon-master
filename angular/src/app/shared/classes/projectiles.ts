@@ -1,21 +1,29 @@
 import { Players } from './player';
 import { ngGroup, ngLivingSprite } from "./gameObjects";
+import { IImpactConfig } from '../interfaces/projectiles';
 
 export namespace Projectiles {
-    export class ngProjectileGroup extends ngGroup
+    export abstract class ngProjectileGroup extends ngGroup
     {
         protected _owner:ngLivingSprite;
         protected _animationKey:string = "bullet";
 
         protected _config = {
             velocity: 500,
-            damage: 5,
             rateOfFire: 5,
             maxFired: 3,
             fixedSize: {
                 x: 32,
                 y: 32
             }
+        }
+
+        public impactConfig:IImpactConfig = {
+            hitPoints: 5,
+            durability: 0,
+            staggerVelocity: 0,
+            staggerDuration: 0,
+            staggerVector: null
         }
 
         private _debounceTimeout:any;
@@ -73,18 +81,28 @@ export namespace Projectiles {
             const {x: vX, y: vY} = this._owner.sprite.body.velocity;
 
             // translate reverse direction vectors
-            if (vector < 0) vector = 360 + vector;
-
-            console.log(vector);
-
+            if (vector && vector < 0) vector = 360 + vector;
+            
             // angle vector for projectiles (but only when moving or when overridden)
-            if (vX < 0 && vY < 0 || vX < 0 && vY > 0 || vector == 225 || vector == 135) {
+            if (vector == 225 || vector == 135)
+            {
                 projectile.setVelocityX(-velocity);
                 vector = vector == 135 ? 90 : 270;
             }
-            else if (vX > 0 && vY < 0 || vX > 0 && vY > 0 || vector == 45 || vector == 315) {
+            else if (vX < 0 && vY) {
+                projectile.setVelocityX(-velocity);
+                vector = vY > 0 ? 90 : 270;
+                if (vX || vY) console.log(vector);
+            }
+            else if (vector == 45 || vector == 315)
+            {
                 projectile.setVelocityX(velocity);
                 vector = vector == 315 ? 270 : 90;
+            }
+            else if (vX > 0 && vY) {
+                projectile.setVelocityX(velocity);
+                vector = vY > 0 ? 90 : 270;
+                if (vX || vY) console.log(vector);
             }
             
             switch(vector)
@@ -203,6 +221,8 @@ export namespace Projectiles {
             this._config.velocity = 350;
             this._config.rateOfFire = 10;
             this._config.maxFired = 5;
+
+            this.impactConfig.hitPoints = 200;
 
             this.setAnimation({
                 key: "fireball-launch",

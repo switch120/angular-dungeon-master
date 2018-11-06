@@ -13,7 +13,7 @@ export namespace Npcs {
         respawn(map:ngMap)
     }   
 
-    export class ngNpc extends ngLivingSprite implements INpc
+    export abstract class ngNpc extends ngLivingSprite implements INpc
     {
         public tilemapProperties?:any;
 
@@ -54,9 +54,9 @@ export namespace Npcs {
         {
             if (!this.isAlive) this.kill();
 
-            this.sprite.setTint(0xff0000);
-            this.sprite.setAcceleration(0,0).setVelocity(0,0);
-            this.sprite.visible = false;
+            // this.sprite.setTint(0xff0000);
+            // this.sprite.setAcceleration(0,0).setVelocity(0,0);
+            // this.sprite.visible = false;
         }
         public respawn(map:ngMap) {
             this.sprite.clearTint();
@@ -78,6 +78,8 @@ export namespace Npcs {
         private _firingAngle: number;
         private _maxFiringAngle: number;
         private _minFiringAngle: number;
+
+        private _interval:any;
 
         public firingIntervalMs: number = 800;
 
@@ -107,9 +109,11 @@ export namespace Npcs {
             super.create(x, y);
             
             this.addWeapons();
+            this.addAnimations();
+
             this.movementState.vector = 0;
 
-            setInterval(() => {
+            this._interval = setInterval(() => {
                 this.rangedWeapon.fire(this._firingAngle);
                 this.update();
                 
@@ -126,6 +130,24 @@ export namespace Npcs {
         public addWeapons() {
             this.weaponState.rangedWeapons.push(new Projectiles.FireBall(this.scene, this, { key: 'tiles' }).create());
             this.weaponState.activeRanged = this.weaponState.rangedWeapons[0];
+        }
+        public addAnimations()
+        {
+            if (this.scene.anims.get(`${this.spriteConfig.texture}_kill`)) return;
+
+            this.scene.anims.create({
+                key: `${this.spriteConfig.texture}_kill`,
+                frames: this.scene.anims.generateFrameNumbers('tiles', { start: 1615, end: 1618 }),
+                frameRate: 10,
+                repeat: 3,
+                hideOnComplete: true
+            });
+        }
+        public kill()
+        {
+            this.sprite.anims.play(`${this.spriteConfig.texture}_kill`, true);
+            super.kill();
+            clearInterval(this._interval);
         }
     }
 }

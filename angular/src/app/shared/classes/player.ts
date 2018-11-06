@@ -14,7 +14,7 @@ export namespace Players
         respawn(map:ngMap)
     }
 
-    export class ngPlayerCharacter extends ngLivingSprite implements IPlayerCharacter
+    export abstract class ngPlayerCharacter extends ngLivingSprite implements IPlayerCharacter
     {
         private _cursors:Phaser.Input.Keyboard.CursorKeys;
 
@@ -141,11 +141,12 @@ export namespace Players
         }
         public kill()
         {
-            if (!this.isAlive) this.kill();
-
-            this.sprite.setTint(0xff0000);
-            this.sprite.setAcceleration(0,0).setVelocity(0,0);
-            this.sprite.visible = false;
+            return;
+            // super.kill();
+            
+            // this.sprite.setTint(0xff0000);
+            // this.sprite.setAcceleration(0,0).setVelocity(0,0);
+            // this.sprite.visible = false;
         }
         public respawn(map:ngMap) {
             let {x, y}:any = map.getSpawnPoint();

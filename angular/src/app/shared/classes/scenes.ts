@@ -6,7 +6,7 @@ import { Npcs } from './npcs';
 export namespace Scenes {
     export interface IScene {
     }
-    export class ngScene extends Phaser.Scene implements IScene{
+    export abstract class ngScene extends Phaser.Scene implements IScene{
         protected mapConfig:IMapConfig = null;
         protected sceneData:any;
 
@@ -25,12 +25,31 @@ export namespace Scenes {
             Players.ngPlayerCharacter.loadAssets(this);
         }
 
-        public initNpcs()
+        public initNpcs(player:Players.BasePlayerCharacter)
         {
             this.map.map.objects[0].objects.forEach( (obj:any) => {
                 console.log(obj);
                 let npc:Npcs.ngNpc = new (Npcs)[obj.name](this, obj.x, obj.y, obj.properties);
                 npc.create();
+
+                // enemy projectiles collide with the pathLayer
+                npc.projectilesCollideWith([this.map.pathLayer], (projectile, platform) => { 
+                    projectile.destroy();
+                });
+
+                // enemy projectiles collide with the player
+                npc.projectilesOverlapWith([player.sprite], (p, projectile) => { 
+                    player.hit(npc.rangedWeapon.impactConfig);
+                    projectile.destroy();
+                });
+
+                // player projectiles collide with npc
+                player.projectilesOverlapWith(npc.sprite, (n, projectile) => {
+                    npc.hit(player.rangedWeapon.impactConfig);
+                    
+                    // todo: support durability as a diminishing value
+                    if (!player.rangedWeapon.impactConfig) projectile.destroy();
+                });
             });
         }
     }
@@ -176,12 +195,12 @@ export namespace Scenes {
             // projectiles collide w/ bombs
             this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
 
-            super.initNpcs();
+            super.initNpcs(this.player);
             
             // projectiles collide with pathlayer
-            // this.player.projectilesCollideWith([this.map.pathLayer], (projectile, platform) => { 
-            //     projectile.destroy();
-            // });
+            this.player.projectilesCollideWith([this.map.pathLayer], (projectile, platform) => { 
+                projectile.destroy();
+            });
         }
         update()
         {

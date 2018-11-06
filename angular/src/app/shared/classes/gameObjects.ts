@@ -141,6 +141,7 @@ export class ngLivingSprite extends ngArcadeSprite implements IHasHealth, IHasWe
 
     public hit(impactConfig: IImpactConfig) {
         this._currentHealth -= impactConfig.hitPoints;
+        if (this._currentHealth <= 0) this.kill();
         this.redrawHealthbar();
     }
 
@@ -172,7 +173,10 @@ export class ngLivingSprite extends ngArcadeSprite implements IHasHealth, IHasWe
             container.fillRect(0, 0, barWidth, barHeight);
         }
 
-        if (this._currentHealth <= 0) return;
+        if (this._currentHealth <= 0) {
+            this._healthBar.setVisible(false);
+            return;
+        }
 
         container.lineStyle(1, 0xFFFFFF, 1.0);
         container.fillStyle(0xFF0000, .8);
