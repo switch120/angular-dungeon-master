@@ -1,5 +1,6 @@
 import { ngGroup } from "./gameObjects";
 
+// NOTE: Not currently being used
 export class BombGroup extends ngGroup
 {
     public texture = "tiles";

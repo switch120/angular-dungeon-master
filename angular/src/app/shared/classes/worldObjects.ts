@@ -2,17 +2,7 @@ import { ngArcadeSprite } from "./gameObjects";
 import { IHealConfig } from "../interfaces/generic";
 
 export namespace WorldObjects {
-    export abstract class ngWorldObject extends ngArcadeSprite {
-        // private _overlapCallback: (player, obj) => void = null;
-    
-        // public get overlapCallback() {
-        //     return this._overlapCallback;
-        // }
-    
-        // public set overlapCallback(val:(player, obj) => void) {
-        //     this._overlapCallback = val;
-        // }
-    
+    export abstract class ngWorldObject extends ngArcadeSprite {    
         public tilemapProperties?:any;
         public healConfig?:IHealConfig;
     
