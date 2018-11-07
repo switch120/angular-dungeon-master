@@ -1,10 +1,6 @@
 # Angular Dungeon Master
 ### Top-down dungeon scroller built on [Phaser 3](https://photonstorm.github.io/phaser3-docs/index.html)
 
-## Prerequisites
-* VirtualBox
-* Vagrant
-
 ## Environment Setup
 
 There is an `environment.ts.sample` file in `/src/environments`. Copy this file to `environment.ts` and replace the values inside with your FireBase information. When you are ready to build and deploy your app, copy the `environment.ts` file to `environment.prod.ts` and then modify any detail that will be different for the live deployed site.
@@ -12,10 +8,6 @@ There is an `environment.ts.sample` file in `/src/environments`. Copy this file 
 > Note: Both environment.ts and environment.prod.ts are intentionally ignored in .gitignore so as not to store sensitive API keys/data in the source repository. **You need to make sure to keep track of these files yourself**!!
 
 ## Development server
-
-Start up the VM with `vagrant up`. First boot will take 2-5m as packages and images are downloaded. It's mormal to see *red text* scroll by.
-
-> Note: If you want to install the [Angular CLI](https://github.com/angular/angular-cli) locally you may not need a VM; your mileage may vary.
 
 The `angular` folder of this app is shared at `/var/www` on the VM.
 

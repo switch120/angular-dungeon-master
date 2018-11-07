@@ -1,15 +1,18 @@
-# Angular Street Quiz with Ubuntu 16.04LTS Virtual Machine
+# Angular Dungeon Master using Phaser 3 with Ubuntu 16.04LTS Virtual Machine
+### Top-down dungeon scroller built on [Phaser 3](https://photonstorm.github.io/phaser3-docs/index.html)
 
 ## Getting Started
 
 The first step is setting up the Virtual Machine, which this document covers. Once you have done that click the link below to view the setup documentation for the Angular app itself.
 
-* [Angular App Documentation](angular-street-quiz)
+* [Angular App Documentation](angular)
 
 ## Virtual Machine setup and configuration
 ### Requirements:
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * [Vagrant](https://www.vagrantup.com/downloads.html)
+
+> Note: If you want to install the [Angular CLI](https://github.com/angular/angular-cli) locally you may not need a VM; your mileage may vary.
 
 ## Usage
 This is intended to be a simple Ubuntu 16.04LTS server with Node 8 installed during provisioning. This can easily be extended to include other services like MySql, Mongo, React CLI, etc.
@@ -28,7 +31,7 @@ After the VM is finished booting and is provisioned, you can access the VM termi
 
 ### File Mapping
 
-The local `/angular-street-quiz` folder in this project is automatically mapped to `/var/www` in the VM by default.
+The local `/angular` folder in this project is automatically mapped to `/var/www` in the VM by default.
 
 ### Getting out of the VM
 To exit the VM console, like any other SSH session, use the `exit` command.
