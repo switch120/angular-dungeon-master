@@ -4,6 +4,8 @@
 environment.prod.ts
 environment.ts
 
+package-lock.json
+
 # Firebase data
 .firebase
 .firebaserc
