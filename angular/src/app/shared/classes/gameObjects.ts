@@ -17,7 +17,7 @@ export abstract class ngGameObject implements IGameObject {
     }
 
     public create() {
-
+        return;
     }
 }
 export abstract class ngArcadeSprite extends ngGameObject {
@@ -156,7 +156,9 @@ export abstract class ngLivingSprite extends ngArcadeSprite implements IHasHealt
 
     public heal(healConfig: IHealConfig) {
         // TODO: Support repeating for duration/timeout configured in IHealConfig
+        if (this._currentHealth >= this._maxHealth) return;
         this._currentHealth += healConfig.hitPoints;
+        this.redrawHealthbar();
     }
 
     protected redrawHealthbar() {
@@ -169,6 +171,7 @@ export abstract class ngLivingSprite extends ngArcadeSprite implements IHasHealt
         if (!this._healthBar)
         {
             this._healthBar = this.scene.add.container(this._sprite.x, this._sprite.y);
+            this._healthBar.setDepth(1);
             container = this.scene.add.graphics();
 
             this._healthBar.add(container);
@@ -215,7 +218,7 @@ export abstract class ngLivingSprite extends ngArcadeSprite implements IHasHealt
     }
 }
 
-export class ngGroup extends ngGameObject {
+export abstract class ngGroup extends ngGameObject {
     protected _group: Phaser.Physics.Arcade.Group;
     protected _groupConfig: GroupCreateConfig;
 

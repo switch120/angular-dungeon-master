@@ -23,13 +23,12 @@ export namespace Npcs {
         }
 
         public set animationsComplete(callback) {
-            console.log(callback);
             this.sprite.on("animationcomplete", callback, this);
         }
 
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture?:string, frame?:number, maxHealth?:number, tilemapProperties?:any)
         {
-            super(scene, x, y, texture, frame, maxHealth);
+            super(scene, x, y, texture || "tiles", frame, maxHealth);
             this.tilemapProperties = tilemapProperties;
         }
 
@@ -91,7 +90,7 @@ export namespace Npcs {
 
         constructor(scene:Phaser.Scene, x?:number, y?:number, properties?:any)
         {
-            super(scene, x, y, 'tiles', 4564, 100, properties);
+            super(scene, x, y, null, 4564, 100, properties);
 
             this._maxFiringAngle = this.tilemapProperties && this.tilemapProperties.maxAngle ? this.tilemapProperties.maxAngle : 90;
             this._minFiringAngle = this.tilemapProperties && this.tilemapProperties.minAngle ? this.tilemapProperties.minAngle : -90;
@@ -137,6 +136,11 @@ export namespace Npcs {
                 repeat: 3,
                 hideOnComplete: true
             });
+
+            this.animationsComplete = (animation, frame) => {
+                this.sprite.disableBody();
+                this.sprite.destroy();
+            };
         }
         public kill()
         {
@@ -148,7 +152,7 @@ export namespace Npcs {
     export class darkWraith extends ngNpc {
         constructor(scene:Phaser.Scene, x?:number, y?:number, properties?:any)
         {
-            super(scene, x, y, 'tiles', 6033, 10, properties);
+            super(scene, x, y, null, 6033, 10, properties);
 
             this._movementSettings = {
                 bounce: 1,
@@ -171,7 +175,6 @@ export namespace Npcs {
         }
         public addAnimations()
         {
-            console.log(this.spriteId);
             if (this.scene.anims.get(`${this.spriteId}_kill`)) return;
 
             this.scene.anims.create({
@@ -183,7 +186,8 @@ export namespace Npcs {
             });
 
             this.animationsComplete = (animation, frame) => {
-                console.log(animation);
+                this.sprite.disableBody();
+                this.sprite.destroy();
             };
         }
         public kill()

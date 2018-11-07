@@ -4,11 +4,6 @@
 
 export const environment = {
   production: false,
-  base_zip: "03857",
-  starting_address: "main st",
-  googlemaps: {
-    api_key: "your-key-here"
-  },
   firebase: {
     apiKey: 'your-key-here',
     authDomain: 'auth-domain-here',

@@ -89,7 +89,6 @@ export namespace MeleeWeapons {
             }
             else if (this._player.movementState.vector == 90 && this._sprite.rotation <= .75)
             {
-                console.log(this._sprite.rotation);
                 this._sprite.setRotation(this._sprite.rotation + weaponSpeed);
             }
             else

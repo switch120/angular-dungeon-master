@@ -10,8 +10,8 @@ export interface IHasHealth {
 }
 export interface IHealConfig {
     hitPoints: number;
-    timeout: number | any;
-    duration: number;
+    timeout?: number | any;
+    duration?: number;
 }
 export interface IHasWeapons {
     weaponState: IWeaponState
@@ -20,11 +20,11 @@ export interface IHasWeapons {
     addWeapons()
 }
 export interface IImpactConfig {
-    hitPoints:number;
-    durability?:number;
-    staggerVelocity?:number;
-    staggerVector?:number;
-    staggerDuration?:number;
+    hitPoints: number;
+    durability?: number;
+    staggerVelocity?: number;
+    staggerVector?: number;
+    staggerDuration?: number;
 }
 export interface IHasMovement {
     movementSettings: IMovementSettings
@@ -53,6 +53,6 @@ export interface IMovementSettings {
     idleTimeoutMs?: number
 }
 export interface IHasAnimations {
-    animationsComplete?:(animation, frame) => {}
+    animationsComplete?: (animation, frame) => {}
     addAnimations()
 }

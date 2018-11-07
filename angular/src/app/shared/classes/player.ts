@@ -72,13 +72,13 @@ export namespace Players
             if (this._cursors.right.isDown)
             {
                 this.sprite.setAccelerationX(this.accelleration);
-                if (!diagonal) this.sprite.anims.play(`${this.spriteConfig.texture}_right`, true);
+                if (!diagonal) this.sprite.anims.play(`${this.spriteId}_right`, true);
                 if (!weaponVisible) this.movementState.vector = 0;
             }
             else if (this._cursors.left.isDown)
             {
                 this.sprite.setAccelerationX(-1 * this.accelleration);
-                if (!diagonal) this.sprite.anims.play(`${this.spriteConfig.texture}_left`, true);
+                if (!diagonal) this.sprite.anims.play(`${this.spriteId}_left`, true);
                 if (!weaponVisible) this.movementState.vector = 180;
             }
             else
@@ -97,7 +97,7 @@ export namespace Players
 
                 if (!weaponVisible)
                 {
-                    this.sprite.anims.play(`${this.spriteConfig.texture}_up`, true);
+                    this.sprite.anims.play(`${this.spriteId}_up`, true);
                     this.movementState.vector = 270;
                 }
             }
@@ -112,7 +112,7 @@ export namespace Players
                 
                 if (!weaponVisible)
                 {
-                    this.sprite.anims.play(`${this.spriteConfig.texture}_down`, true);
+                    this.sprite.anims.play(`${this.spriteId}_down`, true);
                     this.movementState.vector = 90;
                 }
             }
@@ -173,12 +173,11 @@ export namespace Players
         }
     }
 
-    export class BasePlayerCharacter extends ngPlayerCharacter implements IPlayerCharacter {
+    export abstract class BasePlayerCharacter extends ngPlayerCharacter implements IPlayerCharacter {
         
         constructor(scene:Phaser.Scene, x:number = 100, y:number = 350, texture:string = "player")
         {
             super(scene, x, y, texture, 1000);
-            this.spriteConfig.texture = texture;
         }
 
         public registerInputHandler() {
@@ -230,38 +229,38 @@ export namespace Players
     export class ThreeFramePlayer extends BasePlayerCharacter implements IPlayerCharacter {
         public addAnimations()
         {
-            if (this.scene.anims.get(`${this.spriteConfig.texture}_right`)) return;
+            if (this.scene.anims.get(`${this.spriteId}_right`)) return;
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_left`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 9, end: 11 }),
+                key: `${this.spriteId}_left`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 9, end: 11 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_right`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 3, end: 5 }),
+                key: `${this.spriteId}_right`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 3, end: 5 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_up`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 0, end: 2 }),
+                key: `${this.spriteId}_up`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 0, end: 2 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_down`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 6, end: 8 }),
+                key: `${this.spriteId}_down`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 6, end: 8 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             // three frame players need to be set to down or they're facing upward to start (spritesheet configuration)
-            this.sprite.anims.play(`${this.spriteConfig.texture}_down`, true);
+            this.sprite.anims.play(`${this.spriteId}_down`, true);
             this.sprite.anims.stop();
             this.movementState.vector = 90;
         }
@@ -270,32 +269,32 @@ export namespace Players
     export class FourFramePlayer extends BasePlayerCharacter implements IPlayerCharacter {
         public addAnimations()
         {
-            if (this.scene.anims.get(`${this.spriteConfig.texture}_right`)) return;
+            if (this.scene.anims.get(`${this.spriteId}_right`)) return;
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_left`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 4, end: 7 }),
+                key: `${this.spriteId}_left`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 4, end: 7 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_right`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 8, end: 11 }),
+                key: `${this.spriteId}_right`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 8, end: 11 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_up`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 12, end: 15 }),
+                key: `${this.spriteId}_up`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 12, end: 15 }),
                 frameRate: 10,
                 repeat: 2
             });
 
             this.scene.anims.create({
-                key: `${this.spriteConfig.texture}_down`,
-                frames: this.scene.anims.generateFrameNumbers(this.spriteConfig.texture, { start: 0, end: 3 }),
+                key: `${this.spriteId}_down`,
+                frames: this.scene.anims.generateFrameNumbers(this.spriteId, { start: 0, end: 3 }),
                 frameRate: 10,
                 repeat: 2
             });

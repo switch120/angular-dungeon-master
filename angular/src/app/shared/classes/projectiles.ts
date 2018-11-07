@@ -55,6 +55,8 @@ export namespace Projectiles {
 
         public fire(vector?:number)
         {
+            if (!this._owner.sprite) return;
+
             // allow vector override (shoot in direction not facing)
             vector = vector || this._owner.movementState.vector;
 

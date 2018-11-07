@@ -1,9 +1,8 @@
-import { ngGameObject, ngGroup } from "./gameObjects";
+import { ngGroup } from "./gameObjects";
 
 export class BombGroup extends ngGroup
 {
     public texture = "tiles";
-    // public frame = 4098;
     public frame = 4955;
 
     constructor(scene:Phaser.Scene, texture?:string)

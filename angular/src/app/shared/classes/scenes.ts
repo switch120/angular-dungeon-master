@@ -2,14 +2,17 @@ import { BombGroup } from './bombs';
 import { IMapConfig, ngMap } from './map';
 import { Players } from './player';
 import { Npcs } from './npcs';
+import { WorldObjects } from './worldObjects';
 
 export namespace Scenes {
     export interface IScene {
         gameOver:boolean
         npcs:Npcs.ngNpc[]
+        worldObjects:WorldObjects.ngWorldObject[]
         init(data:any)
         preload()
         initNpcs(player:Players.BasePlayerCharacter)
+        initWorldObjects(player:Players.BasePlayerCharacter)
         update()
     }
     export abstract class ngScene extends Phaser.Scene implements IScene {
@@ -19,8 +22,13 @@ export namespace Scenes {
         protected _gameOver:boolean = false;
 
         private _npcs:Npcs.ngNpc[] = [];
+        private _worldObjects:WorldObjects.ngWorldObject[] = [];
 
         public get npcs():Npcs.ngNpc[] {
+            return this._npcs;
+        }
+
+        public get worldObjects():WorldObjects.ngWorldObject[] {
             return this._npcs;
         }
 
@@ -60,6 +68,8 @@ export namespace Scenes {
 
                 // player projectiles collide with npc
                 player.projectilesOverlapWith(npc.sprite, (n, projectile) => {
+                    if (!npc.isAlive) return;
+                    
                     npc.hit(player.rangedWeapon.impactConfig);
                     
                     // todo: support durability as a diminishing value
@@ -79,11 +89,32 @@ export namespace Scenes {
                 this._npcs.push(npc);
             });
         }
+        public initWorldObjects(player:Players.BasePlayerCharacter)
+        {
+            this.map.map.objects.find(layer => layer.name == "Objects").objects.filter(obj => obj.type == "WorldObject").forEach((obj:any) => {
+                let wObj:WorldObjects.ngWorldObject = new (WorldObjects)[obj.name](this, obj.x, obj.y, obj.properties);
+                wObj.create();
+
+                // npc collide w/ player if impactConfig exists
+                if (wObj.healConfig) {
+                    wObj.overlapWith(player.sprite, (n, p) => {
+                        player.heal(wObj.healConfig);
+                    });
+                }
+
+                this._worldObjects.push(wObj);
+            });
+        }
+
         public update() {
             this.map.update();
 
             this.npcs.forEach(npc => {
                 npc.update();
+            });
+
+            this.worldObjects.forEach(wObj => {
+                wObj.update();
             });
         }
     }
@@ -155,8 +186,8 @@ export namespace Scenes {
             
             // this.gameData.score.text = scene.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
-            this.bombs = new BombGroup(this);
-            this.bombs.collideWith([this.map.pathLayer, this.bombs.group]);
+            // this.bombs = new BombGroup(this);
+            // this.bombs.collideWith([this.map.pathLayer, this.bombs.group]);
 
             // Instantiate a player instance at the location of the "Spawn Point" object in the Tiled map
             const spawnPoint:any = this.map.getSpawnPoint();
@@ -170,61 +201,59 @@ export namespace Scenes {
             // start following the player's character
             this.cameras.main.startFollow(this.player.sprite);
 
-            // collide with main path layer, and moving (dynamic) platforms
-            this.player.collideWith([this.map.pathLayer], (player, platform) => this.map.platformCollide(player, platform));
-
-            this.player.collideWith(this.bombs.group, (player, bomb) => {
-                if (!this.player.meleeWeapon.visible)
-                {
-                    this.player.hit({
-                        hitPoints: 10
-                    });
-                }
-            });
+            // this.player.collideWith(this.bombs.group, (player, bomb) => {
+            //     if (!this.player.meleeWeapon.visible)
+            //     {
+            //         this.player.hit({
+            //             hitPoints: 10
+            //         });
+            //     }
+            // });
 
             // let eye = new Npcs.eyeballSentinel(this, this.player.sprite.x, this.player.sprite.y);
             // eye.create();
 
-            this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
+            // this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
 
-            this.player.meleeWeapon.overlapWith(this.bombs.group, (weapon:Phaser.Physics.Arcade.Sprite, bomb:Phaser.Physics.Arcade.Sprite) => {
-                if (!weapon.visible) return;
+            // this.player.meleeWeapon.overlapWith(this.bombs.group, (weapon:Phaser.Physics.Arcade.Sprite, bomb:Phaser.Physics.Arcade.Sprite) => {
+            //     if (!weapon.visible) return;
 
-                const nudge = 50;
-                let vX, vY;
+            //     const nudge = 50;
+            //     let vX, vY;
 
-                switch(this.player.movementState.vector)
-                {
-                    // right / left - only affects x axis
-                    case 0:
-                        vX = bomb.body.velocity.x < 0 ? -1 * bomb.body.velocity.x - nudge : bomb.body.velocity.x + nudge;
-                        vY = bomb.body.velocity.y;
-                        break;
+            //     switch(this.player.movementState.vector)
+            //     {
+            //         // right / left - only affects x axis
+            //         case 0:
+            //             vX = bomb.body.velocity.x < 0 ? -1 * bomb.body.velocity.x - nudge : bomb.body.velocity.x + nudge;
+            //             vY = bomb.body.velocity.y;
+            //             break;
                         
-                    case 180:
-                        vX = bomb.body.velocity.x < 0 ? bomb.body.velocity.x - nudge : -1 * bomb.body.velocity.x + nudge;
-                        vY = bomb.body.velocity.y;
-                        break;
+            //         case 180:
+            //             vX = bomb.body.velocity.x < 0 ? bomb.body.velocity.x - nudge : -1 * bomb.body.velocity.x + nudge;
+            //             vY = bomb.body.velocity.y;
+            //             break;
 
-                    // down / up - only affects y axis
-                    case 90:
-                        vY = bomb.body.velocity.y < 0 ? -1 * bomb.body.velocity.y - nudge : bomb.body.velocity.y + nudge;
-                        vX = bomb.body.velocity.x + nudge;
-                        break;
+            //         // down / up - only affects y axis
+            //         case 90:
+            //             vY = bomb.body.velocity.y < 0 ? -1 * bomb.body.velocity.y - nudge : bomb.body.velocity.y + nudge;
+            //             vX = bomb.body.velocity.x + nudge;
+            //             break;
 
-                    case 270:
-                        vY = bomb.body.velocity.y < 0 ? bomb.body.velocity.y - nudge : -1 * bomb.body.velocity.y + nudge;
-                        vX = bomb.body.velocity.x + nudge;
-                        break;
-                }
+            //         case 270:
+            //             vY = bomb.body.velocity.y < 0 ? bomb.body.velocity.y - nudge : -1 * bomb.body.velocity.y + nudge;
+            //             vX = bomb.body.velocity.x + nudge;
+            //             break;
+            //     }
                 
-                bomb.setVelocity(vX, vY);
-            });
+            //     bomb.setVelocity(vX, vY);
+            // });
 
             // projectiles collide w/ bombs
-            this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
+            // this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
 
             super.initNpcs(this.player);
+            super.initWorldObjects(this.player);
             
             // projectiles collide with pathlayer
             this.player.projectilesCollideWith([this.map.pathLayer], (projectile, platform) => { 

@@ -94,7 +94,7 @@ export class ngMap
         this._scene = scene;
         this._config = config;
     }
-    create()
+    public create()
     {
         this._map = this._scene.make.tilemap({key: this._config.tilemap.mapData.key});
 
@@ -112,89 +112,12 @@ export class ngMap
         this._scene.cameras.main.setBounds(0, 0, this._map.widthInPixels, this._map.heightInPixels);
 
         this._cursors = this._scene.input.keyboard.createCursorKeys();
-
-        this.createMovingSpikes();
-        this.replaceTileSpikes();
     }
-    private createMovingSpikes()
+    public loadAssets()
     {
-        this._dynamicSpikesGroup = this._scene.physics.add.group();
-        
-        this.map.objects[0].objects.filter(obj => obj.type == "Platform-X").forEach((obj:any) => {
-            
-            let group = this._scene.physics.add.group({
-                key: 'tiles',
-                frame: 15,
-                repeat: obj.properties.width,
-                setXY: {
-                    x: obj.x,
-                    y: obj.y,
-                    stepX: 32
-                }
-            });
-
-            let tmp = [];
-            
-            group.getChildren().forEach((child:Phaser.Physics.Arcade.Sprite) => {
-                // don't let it fall down, or move on collision
-                child.body.allowGravity = false;
-                child.body.immovable = true;
-                child.setFrictionX(obj.properties.friction || 1);
-                child.setVelocityX(0);
-                child.setVelocityY(0);
-                child.setBounce(0,0);
-                child.setData("marginX", obj.properties.marginX || 16);
-                child.setData("originX", child.x);
-                child.setData("distanceX", obj.properties.distance);
-
-                //cover it in spikes!
-                const pos = child.getTopLeft();
-                const spike = this._dynamicSpikesGroup.create(pos.x, pos.y - 15, "spike");
-                spike.body.allowGravity = false;
-                spike.body.immovable = true;
-
-                child.setData("spikeSprite", spike);
-
-                tmp.push(spike);
-                // group.add(spike);
-
-            }, null);
-
-            // TODO
-            // scene.physics.add.collider(this.player.bullets, group, (bullet, platform) => { 
-            //     bullet.destroy();
-            // });
-
-            this._platformGroups.push(group);
-        });
+        return;
     }
-    private replaceTileSpikes()
-    {
-        this._staticSpikesGroup = this._scene.physics.add.staticGroup();
-        
-        // convert the spikes into smaller sprites so the hitbox is more accurate
-        this.pathLayer.forEachTile(tile => {
-            if (tile.index === 77) {
-                // A sprite has its origin at the center, so place the sprite at the center of the tile
-                const spike = this._staticSpikesGroup.create(tile.getCenterX(), tile.getCenterY(), "spike");
-
-                // The map has spike tiles that have been rotated in Tiled ("z" key), so parse out that angle to the correct body placement
-                spike.rotation = tile.rotation;
-                if (spike.angle === 0) spike.body.setSize(32, 6).setOffset(0, 26);
-                else if (spike.angle === -90) spike.body.setSize(6, 32).setOffset(26, 0);
-                else if (spike.angle === 90) spike.body.setSize(6, 32).setOffset(0, 0);
-                
-                // And lastly, remove the spike tile from the layer
-                this.pathLayer.removeTileAt(tile.x, tile.y);
-            }
-        });
-    }
-    loadAssets()
-    {
-        // TODO - abstract away
-        this._scene.load.image("spike", "assets/0x72-industrial-spike.png");
-    }
-    getSpawnPoint(index:number = -1) : Phaser.GameObjects.GameObject | any {
+    public getSpawnPoint(index:number = -1) : Phaser.GameObjects.GameObject | any {
         
         const objects = this.map.objects.find(layer => layer.name == "Objects");
         if (!objects) return { x: 0, y: 0 };
@@ -210,71 +133,8 @@ export class ngMap
             return pts[index];
         }
     }
-    update()
+    public update()
     {
-        this._platformGroups.forEach(platform => {
-            let prevSprite:Phaser.Physics.Arcade.Sprite;
-            platform.children.each((sprite:Phaser.Physics.Arcade.Sprite) => {
-                const accel = 50;
-                const origin = sprite.getData("originX");
-                const offsetDist = (origin + sprite.getData("distanceX"));
-                
-                if (sprite.x >= offsetDist) sprite.setData("flipped", true);
-                else if (sprite.x <= origin) sprite.setData("flipped", false);
-
-                // align the group items to stop the strange pixel shift at slow speeds
-                if (prevSprite) sprite.x = prevSprite.getTopRight().x + sprite.getData("marginX");
-                
-                const val = (sprite.getData("flipped") ? -accel : accel);
-    
-                sprite.setVelocityX(val);
-
-                let spike;
-                if (spike = sprite.getData("spikeSprite"))
-                {
-                    spike.setX(sprite.x);
-                    spike.setVelocityX(val);
-                }
-
-                prevSprite = sprite;
-            }, this)
-        });
-    }
-
-    platformCollide(player:Phaser.Physics.Arcade.Sprite, platform:any)
-    {
-        player.body.touching.down = true;
-
-        // don't modify anything if the arrow keys are engaged
-        if (this._cursors.left.isDown || this._cursors.right.isDown) return;
-
-        // immediately remove any acceleration (not velocity) so friction can be applied
-        player.setAcceleration(0);
-
-        const platformVelocity = platform.body ? platform.body.velocity.x : 0;
-        const absPlatformVelocity = Math.abs(platformVelocity);
-        const playerVelocity = Math.abs(player.body.velocity.x);
-
-        // apply manual drag if no directional keys are being pressed; couldn't get Friction working
-        if (playerVelocity > absPlatformVelocity)
-        {
-            if (player.body.velocity.x < 0)
-            {
-                player.body.velocity.x += this._config.tilemap.deceleration;
-            }
-            else
-            {
-                player.body.velocity.x -= this._config.tilemap.deceleration;
-            }
-
-            if (this._config.tilemap.deceleration >= playerVelocity || playerVelocity < absPlatformVelocity)
-            {
-                player.setVelocityX(0);
-            }
-        }
-        else
-        {
-            player.setVelocityX(0);
-        }
+        return;
     }
 }
