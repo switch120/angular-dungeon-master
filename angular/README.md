@@ -9,7 +9,7 @@ There is an `environment.ts.sample` file in `/src/environments`. Copy this file 
 
 ## Development server
 
-The `angular` folder of this app is shared at `/var/www` on the VM.
+This entire folder is shared at `/var/www` on the VM.
 
 Run `/var/www/npm start` for a dev server. Navigate to `http://host-name/` (or ip; configure in `vagrantfile`). 
 
@@ -32,7 +32,7 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 
 ## Deploying the App
 
-SSH into VM and install Firebase CLI. This cannot be done at provision time due to permissions issues.
+SSH into VM and install [Firebase CLI](https://github.com/firebase/firebase-tools). This cannot be done at provision time due to permissions issues.
 
 ```
 $ sudo npm install -g firebase-tools

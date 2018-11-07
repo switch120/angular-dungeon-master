@@ -7,12 +7,12 @@ The first step is setting up the Virtual Machine, which this document covers. On
 
 * [Angular App Documentation](angular)
 
+> Note: If you want to install the [Angular CLI](https://github.com/angular/angular-cli) locally you may not need a VM; your mileage may vary. If you install it locally, you can ignore the rest of this file and continue to the [Angular App Documentation](angular). This will also require you to install [Firebase CLI](https://github.com/firebase/firebase-tools) for deployment if you want to use FireBase as your deployment mechanism.
+
 ## Virtual Machine setup and configuration
 ### Requirements:
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * [Vagrant](https://www.vagrantup.com/downloads.html)
-
-> Note: If you want to install the [Angular CLI](https://github.com/angular/angular-cli) locally you may not need a VM; your mileage may vary.
 
 ## Usage
 This is intended to be a simple Ubuntu 16.04LTS server with Node 8 installed during provisioning. This can easily be extended to include other services like MySql, Mongo, React CLI, etc.
