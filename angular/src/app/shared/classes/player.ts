@@ -221,7 +221,7 @@ export namespace Players
 
             this.weaponState.activeRanged = this.weaponState.rangedWeapons[0];
 
-            this.weaponState.meleeWeapons.push(new MeleeWeapons.ngMeleeWeapon(this, 'tiles', 5660));
+            this.weaponState.meleeWeapons.push(new MeleeWeapons.ngMeleeWeapon(this, 'tiles', 5660, null, { hitPoints: 10 }));
             this.weaponState.activeMelee = this.weaponState.meleeWeapons[0];
         }
     }

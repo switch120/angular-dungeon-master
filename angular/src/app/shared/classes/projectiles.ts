@@ -1,12 +1,11 @@
-import { IImpactConfig } from './../interfaces/generic';
+import { IImpactConfig, IHasImpact } from './../interfaces/generic';
 import { Players } from './player';
 import { ngGroup, ngLivingSprite } from "./gameObjects";
 
 export namespace Projectiles {
-    export abstract class ngProjectileGroup extends ngGroup
+    export abstract class ngProjectileGroup extends ngGroup implements IHasImpact
     {
         protected _owner:ngLivingSprite;
-        protected _animationKey:string = "bullet";
 
         protected _config = {
             velocity: 500,
@@ -55,7 +54,7 @@ export namespace Projectiles {
 
         public fire(vector?:number)
         {
-            if (!this._owner.sprite) return;
+            if (!this._owner.sprite.body) return;
 
             // allow vector override (shoot in direction not facing)
             vector = vector || this._owner.movementState.vector;

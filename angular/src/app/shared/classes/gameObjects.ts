@@ -216,6 +216,11 @@ export abstract class ngLivingSprite extends ngArcadeSprite implements IHasHealt
     {
         this.scene.physics.add.collider(this.weaponState.rangedWeapons.map(elem => elem.group), object, callback);
     }
+
+    public meleeOverlapsWith(object:Phaser.GameObjects.GameObject|Phaser.Physics.Arcade.Group|any[], callback:(weapon:Phaser.Physics.Arcade.Sprite, object:Phaser.Physics.Arcade.Sprite) => void = () => {})
+    {
+        this.scene.physics.add.collider(this.weaponState.meleeWeapons.map(elem => elem.sprite), object, callback);
+    }
 }
 
 export abstract class ngGroup extends ngGameObject {

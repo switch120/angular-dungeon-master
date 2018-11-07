@@ -67,13 +67,15 @@ export namespace Scenes {
                 });
 
                 // player projectiles collide with npc
-                player.projectilesOverlapWith(npc.sprite, (n, projectile) => {
-                    if (!npc.isAlive) return;
-                    
+                player.projectilesOverlapWith(npc.sprite, (n, projectile) => {                    
                     npc.hit(player.rangedWeapon.impactConfig);
                     
                     // todo: support durability as a diminishing value
                     if (!player.rangedWeapon.impactConfig.durability) projectile.destroy();
+                });
+
+                player.meleeOverlapsWith(npc.sprite, (n, meleeWeapon) => {
+                    npc.hit(player.meleeWeapon.impactConfig);
                 });
 
                 // npc collide w/ pathLayer
@@ -82,6 +84,7 @@ export namespace Scenes {
                 // npc collide w/ player if impactConfig exists
                 if (npc.impactConfig) {
                     npc.collideWith(player.sprite, (n, p) => {
+                        if (!npc.isAlive) return;
                         player.hit(npc.impactConfig);
                     });
                 }
@@ -184,10 +187,8 @@ export namespace Scenes {
             
             this.map.pathLayer.setCollisionByExclusion([-1]);
             
-            // this.gameData.score.text = scene.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-
-            // this.bombs = new BombGroup(this);
-            // this.bombs.collideWith([this.map.pathLayer, this.bombs.group]);
+            // adding text to the scene ...
+            // scene.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
             // Instantiate a player instance at the location of the "Spawn Point" object in the Tiled map
             const spawnPoint:any = this.map.getSpawnPoint();
@@ -198,9 +199,22 @@ export namespace Scenes {
             this.player.addAnimations();
             this.player.registerInputHandler();
 
+            this.player.collideWith(this.map.pathLayer);
+
             // start following the player's character
             this.cameras.main.startFollow(this.player.sprite);
 
+            ///////////////////////////////////////////////////////////////////
+            // Un-used but worth referencing (uncomment to spawn a random-sized bomb that splits when hit by projectiles)
+            // NOTE: if you uncomment this section, ALSO uncomment the bombs.update() in the update() function or they won't move
+            ///////////////////////////////////////////////////////////////////
+            // this.bombs = new BombGroup(this);
+            // this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
+
+            // bombs stay inside pathLayer
+            // this.bombs.collideWith([this.map.pathLayer, this.bombs.group]);
+
+            // Player collides with bombs
             // this.player.collideWith(this.bombs.group, (player, bomb) => {
             //     if (!this.player.meleeWeapon.visible)
             //     {
@@ -210,11 +224,7 @@ export namespace Scenes {
             //     }
             // });
 
-            // let eye = new Npcs.eyeballSentinel(this, this.player.sprite.x, this.player.sprite.y);
-            // eye.create();
-
-            // this.bombs.addBomb(this.player.sprite.y, this.player.sprite.x);
-
+            // Player Melee weapon strikes bombs and changes their direction (but does not damage them)
             // this.player.meleeWeapon.overlapWith(this.bombs.group, (weapon:Phaser.Physics.Arcade.Sprite, bomb:Phaser.Physics.Arcade.Sprite) => {
             //     if (!weapon.visible) return;
 
@@ -249,8 +259,10 @@ export namespace Scenes {
             //     bomb.setVelocity(vX, vY);
             // });
 
-            // projectiles collide w/ bombs
+            // projectiles collide w/ bombs (splitting logic container inside)
             // this.player.projectilesOverlapWith(this.bombs.group, (projectile, bomb) => this.bombs.projectileCollide(projectile, bomb));
+            
+            ///////////////////////////////////////////////////////////////////
 
             super.initNpcs(this.player);
             super.initWorldObjects(this.player);
@@ -283,7 +295,9 @@ export namespace Scenes {
             };
 
             this.player.update();
-            this.bombs.update();
+
+            // if bombs are uncommented in create(), uncomment this so they update
+            // this.bombs.update();
         }
     
     }

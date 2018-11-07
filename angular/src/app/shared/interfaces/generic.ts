@@ -26,6 +26,9 @@ export interface IImpactConfig {
     staggerVector?: number;
     staggerDuration?: number;
 }
+export interface IHasImpact {
+    impactConfig:IImpactConfig
+}
 export interface IHasMovement {
     movementSettings: IMovementSettings
     movementState: IMovementState

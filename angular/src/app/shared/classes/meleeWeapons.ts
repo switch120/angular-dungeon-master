@@ -1,8 +1,9 @@
+import { IImpactConfig, IHasImpact } from './../interfaces/generic';
 import { Players } from './player';
 import { ngArcadeSprite } from './gameObjects';
 
 export namespace MeleeWeapons {
-    export class ngMeleeWeapon extends ngArcadeSprite {
+    export class ngMeleeWeapon extends ngArcadeSprite implements IHasImpact {
 
         private _player: Players.ngPlayerCharacter;
 
@@ -15,11 +16,21 @@ export namespace MeleeWeapons {
             slashRotation: .3
         };
 
-        constructor(player: Players.ngPlayerCharacter, texture: string, frame: number, config?: any) {
+        public impactConfig:IImpactConfig = {
+            hitPoints: 5,
+            durability: 0,
+            staggerVelocity: 0,
+            staggerDuration: 0,
+            staggerVector: null
+        }
+
+        constructor(player: Players.ngPlayerCharacter, texture: string, frame: number, config?: any, impactConfig?:IImpactConfig) {
             super(player.scene, player.sprite.x, player.sprite.y, texture, frame);
 
             this._player = player;
             this.config = { ...this.config, ...config }
+            
+            if (impactConfig) this.impactConfig = { ...impactConfig };
 
             this.create();
         }
