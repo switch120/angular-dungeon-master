@@ -45,6 +45,8 @@ $ firebase login
 $ firebase use --add
 ```
 
+> Note: `firebase login` will provide you a URL to load on another device. After authenticating you'll be redirected to a `localhost` url that will fail if you're using a VM. You'll want to change `localhost` to your VM's hostname or ip address and reload the page. Authentication should succeed and the VM is forever more authenticated to your account.
+
 Next, build the app following the instructions above. Once the app has compiled, you can deploy to FireBase:
 
 ```
