@@ -1,6 +1,8 @@
 # Angular Dungeon Master using Phaser 3 with Ubuntu 16.04LTS Virtual Machine
 ### Top-down dungeon scroller built on [Phaser 3](https://photonstorm.github.io/phaser3-docs/index.html)
 
+![](screenshot.png?raw=true)
+
 ## Getting Started
 
 The first step is setting up the Virtual Machine, which this document covers. Once you have done that click the link below to view the setup documentation for the Angular app itself.

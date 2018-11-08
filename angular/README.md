@@ -1,8 +1,6 @@
 # Angular Dungeon Master
 ### Top-down dungeon scroller built on [Phaser 3](https://photonstorm.github.io/phaser3-docs/index.html)
 
-![](screenshot.png?raw=true)
-
 ## Environment Setup
 
 There is an `environment.ts.sample` file in `/src/environments`. Copy this file to `environment.ts` and replace the values inside with your FireBase information. When you are ready to build and deploy your app, copy the `environment.ts` file to `environment.prod.ts` and then modify any detail that will be different for the live deployed site.
