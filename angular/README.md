@@ -26,6 +26,9 @@ Run `/var/www/npm start` for a dev server. Navigate to `http://host-name/` (or i
     * Fire - `space`
     * Switch projectile - `x`
 
+## TileMaps
+Each "level" is built using a Tilemap editor, which embeds a spritesheet used to render the tiles or individual sprites/frames. The demo Tilemap ( [dungeon_1.tmx](../tilemaps/dungeon_1.tmx) ) was built using [Tiled Tilemap Editor](https://www.mapeditor.org/) and embeds an open-source spritesheet that was downloaded from [Open Game Art](https://opengameart.org/content/dungeon-crawl-32x32-tiles). Use in production at your own risk!
+
 ## Building the App
 
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
