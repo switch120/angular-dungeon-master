@@ -18,7 +18,7 @@ export namespace Projectiles {
         }
 
         public impactConfig:IImpactConfig = {
-            hitPoints: 5,
+            hitPoints: null,
             durability: 0,
             staggerVelocity: 0,
             staggerDuration: 0,
@@ -29,11 +29,13 @@ export namespace Projectiles {
 
         private _animationConfig:AnimationConfig;
 
-        constructor(scene:Phaser.Scene, owner:ngLivingSprite, groupConfig?:GroupCreateConfig)
+        constructor(scene:Phaser.Scene, owner:ngLivingSprite, groupConfig?:GroupCreateConfig, impactConfig?:IImpactConfig)
         {
             super(scene);
             this._owner = owner;
             this._groupConfig = groupConfig;
+
+            if (impactConfig) this.impactConfig = {...this.impactConfig, ...impactConfig};
         }
 
         public create()
@@ -151,6 +153,11 @@ export namespace Projectiles {
     }
     export class ThrowingAxe extends ngProjectileGroup
     {
+        constructor(scene:Phaser.Scene, owner:ngLivingSprite, groupConfig?:GroupCreateConfig, impactConfig?:IImpactConfig)
+        {
+            super(scene, owner, groupConfig, impactConfig || { hitPoints: 10 });
+        }
+
         public create()
         {
             super.create();
@@ -172,6 +179,11 @@ export namespace Projectiles {
     }
     export class StandardArrow extends ngProjectileGroup
     {
+        constructor(scene:Phaser.Scene, owner:ngLivingSprite, groupConfig?:GroupCreateConfig, impactConfig?:IImpactConfig)
+        {
+            super(scene, owner, groupConfig, impactConfig || { hitPoints: 5 });
+        }
+
         public create()
         {
             this._groupConfig.frame = 1565;
@@ -191,6 +203,11 @@ export namespace Projectiles {
     }
     export class BlueMagicOrb extends ngProjectileGroup
     {
+        constructor(scene:Phaser.Scene, owner:ngLivingSprite, groupConfig?:GroupCreateConfig, impactConfig?:IImpactConfig)
+        {
+            super(scene, owner, groupConfig, impactConfig || { hitPoints: 15 });
+        }
+
         public create()
         {
             super.create();
@@ -213,6 +230,11 @@ export namespace Projectiles {
 
     export class FireBall extends ngProjectileGroup
     {
+        constructor(scene:Phaser.Scene, owner:ngLivingSprite, groupConfig?:GroupCreateConfig, impactConfig?:IImpactConfig)
+        {
+            super(scene, owner, groupConfig, impactConfig || { hitPoints: 20 });
+        }
+
         public create()
         {
             super.create();
@@ -220,8 +242,6 @@ export namespace Projectiles {
             this._config.velocity = 350;
             this._config.rateOfFire = 10;
             this._config.maxFired = 5;
-
-            this.impactConfig.hitPoints = 200;
 
             this.setAnimation({
                 key: "fireball-launch",

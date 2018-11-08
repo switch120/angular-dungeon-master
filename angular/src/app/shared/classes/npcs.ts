@@ -122,7 +122,8 @@ export namespace Npcs {
             }, this.firingIntervalMs);
         }
         public addWeapons() {
-            this.weaponState.rangedWeapons.push(new Projectiles.FireBall(this.scene, this, { key: 'tiles' }).create());
+            
+            this.weaponState.rangedWeapons.push(new Projectiles.FireBall(this.scene, this, { key: 'tiles' }, { hitPoints: 200 }).create());
             this.weaponState.activeRanged = this.weaponState.rangedWeapons[0];
         }
         public addAnimations()

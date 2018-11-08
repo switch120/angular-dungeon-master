@@ -75,6 +75,7 @@ export namespace Scenes {
                 });
 
                 player.meleeOverlapsWith(npc.sprite, (n, meleeWeapon) => {
+                    if (!player.meleeWeapon.sprite.visible) return;
                     npc.hit(player.meleeWeapon.impactConfig);
                 });
 
