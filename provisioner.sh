@@ -16,7 +16,7 @@ sudo timedatectl set-timezone America/New_York
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 apt-get install -y nodejs
 
-npm install -g @angular/cli
+sudo npm install -g @angular/cli
 
 #allow non-root user to invoke a Node server on ports < 1024
 sudo apt-get install libcap2-bin
